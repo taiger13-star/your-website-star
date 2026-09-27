@@ -8,18 +8,19 @@ import {
   type ReactNode,
 } from "react";
 
-const CART_KEY = "noir-atelier.cart.v1";
+import type { ColorId, ShopSystem, SizeCode } from "@/lib/types";
 
-export type ShopSystem = "standard" | "smart";
-export type SizeCode = "S" | "M" | "L" | "XL";
+export type { ColorId, ShopSystem, SizeCode } from "@/lib/types";
+
+const CART_KEY = "noir-atelier.cart.v1";
 
 export type CartItem = {
   key: string;
   productId: string;
   sku: string;
   size: SizeCode;
-  bodyColor: string;
-  insertColor: string;
+  bodyColor: ColorId;
+  insertColor: ColorId;
   system: ShopSystem;
   qty: number;
   unitPrice: number;
