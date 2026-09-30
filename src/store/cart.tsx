@@ -8,9 +8,9 @@ import {
   type ReactNode,
 } from "react";
 
-import type { ColorId, ShopSystem, SizeCode } from "@/lib/types";
+import type { ShopSystem } from "@/lib/types";
 
-export type { ColorId, ShopSystem, SizeCode } from "@/lib/types";
+export type { ShopSystem } from "@/lib/types";
 
 const CART_KEY = "noir-atelier.cart.v1";
 
@@ -18,9 +18,10 @@ export type CartItem = {
   key: string;
   productId: string;
   sku: string;
-  size: SizeCode;
-  bodyColor: ColorId;
-  insertColor: ColorId;
+  variantId: string;
+  size: string;
+  bodyColor: string;
+  insertColor: string;
   system: ShopSystem;
   qty: number;
   unitPrice: number;
@@ -41,7 +42,7 @@ type CartContextValue = {
 const CartContext = createContext<CartContextValue | null>(null);
 
 function makeKey(item: Omit<CartItem, "key">): string {
-  return [item.productId, item.size, item.bodyColor, item.insertColor, item.system].join("__");
+  return [item.productId, item.variantId, item.bodyColor, item.insertColor, item.system].join("__");
 }
 
 function readCart(): CartItem[] {
@@ -84,7 +85,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
       const existing = prev.find((i) => i.key === key);
       if (existing) {
         return prev.map((i) =>
-          i.key === key ? { ...i, qty: Math.min(99, i.qty + item.qty), unitPrice: item.unitPrice } : i,
+          i.key === key
+            ? { ...i, qty: Math.min(99, i.qty + item.qty), unitPrice: item.unitPrice }
+            : i,
         );
       }
       return [...prev, { ...item, key }];

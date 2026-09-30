@@ -1,0 +1,34 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: noir-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-noir_atelier}
+      POSTGRES_USER: ${POSTGRES_USER:-noir}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-noir-local-password}
+    ports:
+      - "5450:5432"
+    volumes:
+      - noir_postgres_data:/var/lib/postgresql/data
+
+  minio:
+    build:
+      context: .
+      dockerfile: Dockerfile.minio
+    image: noir-minio:local
+    container_name: noir-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-noir-minio}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-noir-local-minio-password}
+    ports:
+      - "6300:9000"
+      - "6301:9001"
+    volumes:
+      - noir_minio_data:/data
+
+volumes:
+  noir_postgres_data:
+  noir_minio_data:

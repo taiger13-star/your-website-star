@@ -33,7 +33,7 @@ export type NavItem = { label: string; to: string };
 export const NAV_LINKS: NavItem[] = [
   { label: "Коллекции", to: "/collections" },
   { label: "Каталог", to: "/catalog" },
-  { label: "NOIR Smart", to: "/smart" },
+  { label: "NOIR SMART", to: "/smart" },
   { label: "Для бизнеса", to: "/business" },
   { label: "О бренде", to: "/about" },
 ];
@@ -44,7 +44,7 @@ export const FOOTER_SECTIONS: { title: string; links: NavItem[] }[] = [
     links: [
       { label: "Все изделия", to: "/catalog" },
       { label: "Коллекции", to: "/collections" },
-      { label: "NOIR Smart", to: "/smart" },
+      { label: "NOIR SMART", to: "/smart" },
       { label: "Для бизнеса", to: "/business" },
       { label: "Индивидуальный дизайн", to: "/custom" },
     ],
@@ -79,7 +79,7 @@ export const MATERIALS = [
     code: "PETG",
     name: "PETG",
     full: "Полиэтилен терефталат",
-    note: "Плотный, влагостойкий, чуть более глянцевый — для Smart-корпусов и влажных зон.",
+    note: "Плотный, влагостойкий, чуть более глянцевый — для корпусов NOIR SMART и влажных зон.",
   },
   {
     code: "TPU",
@@ -91,7 +91,7 @@ export const MATERIALS = [
     code: "PETG-C",
     name: "Transparent PETG",
     full: "Прозрачный PETG",
-    note: "Вертикальное окно уровня воды в системе NOIR Smart.",
+    note: "Вертикальное окно уровня воды в системе NOIR SMART.",
   },
 ] as const;
 
@@ -133,8 +133,8 @@ export const FAQ_ITEMS: FaqItem[] = [
     a: "Да, в пределах модельного ряда: S, M, L, XL. Для нестандартных размеров есть индивидуальный дизайн — тогда меняется не только масштаб, но и конструкция, а стоимость рассчитывается отдельно.",
   },
   {
-    q: "Чем Smart отличается от Standard?",
-    a: "Standard — это обычное дизайнерское кашпо с дренажом. Smart добавляет внутреннюю вставку, резервуар для воды ориентировочно на 1 литр, капиллярную подачу влаги, прозрачное окно уровня воды и поплавковый индикатор. Smart доступен там, где в карточке товара включён переключатель STANDARD / SMART.",
+    q: "Чем NOIR SMART отличается от Standard?",
+    a: "Standard — это обычное дизайнерское кашпо с дренажом. NOIR SMART добавляет внутреннюю вставку, резервуар для воды, капиллярную подачу влаги, прозрачное окно уровня воды с отметками MIN / MAX и поплавковый индикатор. NOIR SMART доступен там, где в карточке товара есть переключатель Standard / NOIR SMART.",
   },
   {
     q: "Как работает автополив?",

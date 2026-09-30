@@ -3,20 +3,32 @@ import { useNavigate } from "@tanstack/react-router";
 import { Search, X } from "lucide-react";
 import * as SheetPrimitive from "@radix-ui/react-dialog";
 
-import { getCollection, minPrice, searchProducts } from "@/lib/catalog";
 import { formatPrice, plural } from "@/lib/format";
 import { useShopUI } from "@/store/ui";
+import { minimumPrice, useCatalog } from "@/store/catalog";
 
 export function SearchOverlay() {
   const { searchOpen, closeSearch, openSearch } = useShopUI();
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
+  const { products } = useCatalog();
 
   useEffect(() => {
     if (!searchOpen) setQuery("");
   }, [searchOpen]);
 
-  const results = useMemo(() => searchProducts(query, 6), [query]);
+  const results = useMemo(() => {
+    const normalized = query.trim().toLowerCase();
+    if (!normalized) return [];
+    return products
+      .filter((product) =>
+        [product.name, product.collectionName, product.shortDescription, product.description]
+          .join(" ")
+          .toLowerCase()
+          .includes(normalized),
+      )
+      .slice(0, 6);
+  }, [products, query]);
 
   const go = (slug: string) => {
     closeSearch();
@@ -33,9 +45,7 @@ export function SearchOverlay() {
     >
       <SheetPrimitive.Portal>
         <SheetPrimitive.Overlay className="fixed inset-0 z-50 bg-ink/40 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-        <SheetPrimitive.Content
-          className="fixed inset-x-0 top-0 z-50 max-h-[85vh] overflow-y-auto border-b border-hairline bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top"
-        >
+        <SheetPrimitive.Content className="fixed inset-x-0 top-0 z-50 max-h-[85vh] overflow-y-auto border-b border-hairline bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top">
           <div className="container-page py-8">
             <div className="flex items-center justify-between">
               <SheetPrimitive.Title className="label-caps text-taupe">Поиск</SheetPrimitive.Title>
@@ -79,7 +89,7 @@ export function SearchOverlay() {
                             />
                             <span className="min-w-0 flex-1">
                               <span className="label-caps block text-taupe">
-                                {getCollection(product.collection)?.name}
+                                {product.collectionName}
                               </span>
                               <span className="mt-1 block truncate font-display text-xl text-foreground">
                                 {product.name}
@@ -89,7 +99,7 @@ export function SearchOverlay() {
                               </span>
                             </span>
                             <span className="shrink-0 text-sm text-ink">
-                              от {formatPrice(minPrice(product))}
+                              от {formatPrice(minimumPrice(product))}
                             </span>
                           </button>
                         </li>

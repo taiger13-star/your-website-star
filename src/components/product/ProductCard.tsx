@@ -1,23 +1,28 @@
 import { Link } from "@tanstack/react-router";
 import { Heart } from "lucide-react";
 
-import { getCollection, minPrice, type Product } from "@/lib/catalog";
 import { formatPrice } from "@/lib/format";
 import { useWishlist } from "@/store/wishlist";
 import { cn } from "@/lib/utils";
+import { minimumPrice } from "@/store/catalog";
+import type { PublicProduct } from "@/server/catalog-service";
+
+function canonicalSmartName(value: string) {
+  return value.replace(/\bSmart\b/g, "NOIR SMART");
+}
 
 export function ProductCard({
   product,
   className,
   priority = false,
 }: {
-  product: Product;
+  product: PublicProduct;
   className?: string;
   priority?: boolean;
 }) {
   const wishlist = useWishlist();
-  const collection = getCollection(product.collection);
   const liked = wishlist.hydrated && wishlist.has(product.id);
+  const hasSmart = product.variants.some((variant) => variant.system === "smart");
 
   return (
     <article className={cn("group relative", className)}>
@@ -28,8 +33,8 @@ export function ProductCard({
       >
         <div className="relative aspect-[4/5] overflow-hidden bg-secondary">
           <img
-            src={product.images[0]}
-            alt={`${product.name} — ${collection?.tagline ?? "изделие NOIR ATELIER"}`}
+            src={product.images[0] ?? "/favicon.svg"}
+            alt={`${product.name} — ${product.collectionTagline || "изделие NOIR ATELIER"}`}
             loading={priority ? "eager" : "lazy"}
             width={1008}
             height={1200}
@@ -37,22 +42,25 @@ export function ProductCard({
           />
           <div className="absolute left-3 top-3 flex flex-col items-start gap-2">
             {product.isNew ? <CardTag label="Новинка" /> : null}
-            {product.bestseller ? <CardTag label="Хит" /> : null}
-            {product.collection === "limited" ? <CardTag label="Лимит" /> : null}
+            {product.isBestseller ? <CardTag label="Хит" /> : null}
+            {product.isComingSoon ? <CardTag label="Скоро" /> : null}
           </div>
         </div>
 
         <div className="pt-4">
-          <p className="label-caps text-taupe">{collection?.name}</p>
-          <h3 className="mt-2 font-display text-xl leading-snug text-foreground">
-            {product.name}
-          </h3>
+          <p className="label-caps text-taupe">{product.collectionName}</p>
+          <h3 className="mt-2 font-display text-xl leading-snug text-foreground">{product.name}</h3>
           <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
-            {product.shortDescription}
+            {canonicalSmartName(product.shortDescription)}
           </p>
+          {hasSmart ? (
+            <p className="mt-2 text-[10px] font-medium uppercase tracking-[0.14em] text-taupe">
+              Standard · NOIR SMART
+            </p>
+          ) : null}
           <p className="mt-3 text-sm text-ink">
             <span className="text-muted-foreground">от </span>
-            {formatPrice(minPrice(product))}
+            {formatPrice(minimumPrice(product))}
           </p>
         </div>
       </Link>

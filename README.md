@@ -20,5 +20,24 @@ Prefer working locally? You need Node.js and npm — [install with nvm](https://
 git clone <this-repository-url>
 cd <repository-name>
 npm i
+cp .env.example .env
+npm run infra:up
+npm run db:migrate
+npm run db:seed
 npm run dev
+```
+
+## Каталог и админка
+
+- PostgreSQL работает в Docker на `localhost:5450`. MinIO API — на `localhost:6300`, его консоль — на `localhost:6301`. Образ MinIO собирается локально из официального закреплённого исходного релиза, поэтому запуск не зависит от закрытого container registry MinIO.
+- Настройки и локальные секреты находятся в `.env`, он намеренно не попадает в Git. Перед первым запуском замените значения администратора и сессии в нём.
+- URL админки: `/admin/<ADMIN_ROUTE_TOKEN>`. Токен должен состоять ровно из 32 латинских букв, а вход дополнительно защищён `ADMIN_PASSWORD` и HTTP-only сессией.
+- `npm run db:seed` переносит текущий демонстрационный каталог и изображения из `src/assets` в PostgreSQL и MinIO. После импорта данные для витрины берутся из БД.
+
+Полезные команды:
+
+```sh
+npm run infra:down     # остановить локальные контейнеры
+npm run db:generate    # создать новую Drizzle-миграцию после изменения схемы
+npm run db:migrate     # применить миграции
 ```

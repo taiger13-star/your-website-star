@@ -4,6 +4,7 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -20,6 +21,8 @@ import { Toaster } from "../components/ui/sonner";
 import { CartProvider } from "../store/cart";
 import { WishlistProvider } from "../store/wishlist";
 import { UIProvider } from "../store/ui";
+import { CatalogProvider } from "../store/catalog";
+import { getCatalogFn } from "../lib/server-functions";
 
 function NotFoundComponent() {
   return (
@@ -44,7 +47,10 @@ function NotFoundComponent() {
           На главную
         </Link>
       </div>
-      <nav className="mt-12 flex flex-wrap justify-center gap-x-6 gap-y-3" aria-label="Разделы сайта">
+      <nav
+        className="mt-12 flex flex-wrap justify-center gap-x-6 gap-y-3"
+        aria-label="Разделы сайта"
+      >
         {NAV_LINKS.map((item) => (
           <Link
             key={item.to}
@@ -96,6 +102,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+  loader: () => getCatalogFn(),
   head: () => ({
     meta: [
       { charSet: "utf-8" },
@@ -153,28 +160,33 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const catalog = Route.useLoaderData();
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const isAdminRoute = pathname.startsWith("/admin/");
 
   return (
     <QueryClientProvider client={queryClient}>
       <UIProvider>
-        <CartProvider>
-          <WishlistProvider>
-            <a
-              href="#main"
-              className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:bg-ink focus:px-4 focus:py-2 focus:text-primary-foreground"
-            >
-              Перейти к содержимому
-            </a>
-            <Header />
-            <main id="main">
-              <Outlet />
-            </main>
-            <Footer />
-            <CartDrawer />
-            <SearchOverlay />
-            <Toaster position="bottom-center" richColors={false} closeButton />
-          </WishlistProvider>
-        </CartProvider>
+        <CatalogProvider data={catalog}>
+          <CartProvider>
+            <WishlistProvider>
+              <a
+                href="#main"
+                className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:bg-ink focus:px-4 focus:py-2 focus:text-primary-foreground"
+              >
+                Перейти к содержимому
+              </a>
+              {!isAdminRoute ? <Header /> : null}
+              <main id="main">
+                <Outlet />
+              </main>
+              <Footer />
+              <CartDrawer />
+              <SearchOverlay />
+              <Toaster position="bottom-center" richColors={false} closeButton />
+            </WishlistProvider>
+          </CartProvider>
+        </CatalogProvider>
       </UIProvider>
     </QueryClientProvider>
   );
