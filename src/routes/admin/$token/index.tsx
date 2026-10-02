@@ -161,7 +161,17 @@ function Products({ data, refresh }: { data: any; refresh: () => void }) {
             setEditing({
               publicationStatus: "draft",
               category: "decor",
-              variants: [],
+              variants: [
+                {
+                  sizeCode: "M",
+                  system: "standard",
+                  price: 0,
+                  productionDays: 7,
+                  enabled: true,
+                  measurements: { outerHeightMm: 160, scaleReference: "plant" },
+                },
+              ],
+              specifications: [],
               colorIds: [],
               materialNames: [],
               mediaIds: [],
@@ -242,25 +252,18 @@ function ProductForm({
 }) {
   const [pending, setPending] = useState(false);
   const [mediaIds, setMediaIds] = useState<string[]>(item.mediaIds ?? []);
+  const [variants, setVariants] = useState(() =>
+    (item.variants ?? []).map((variant: any) => ({
+      ...variant,
+      measurements: item.measurements?.find(
+        (measurement: any) => measurement.variantId === variant.id,
+      ) ?? { outerHeightMm: null, scaleReference: "plant" },
+    })),
+  );
+  const [specifications, setSpecifications] = useState<any[]>(item.specifications ?? []);
   const submit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
-    const variants = String(form.get("variants") ?? "")
-      .split("\n")
-      .map((line) => line.trim())
-      .filter(Boolean)
-      .map((line) => {
-        const [sizeCode, system, price, productionDays, enabled = "yes"] = line
-          .split(";")
-          .map((x) => x.trim());
-        return {
-          sizeCode,
-          system: system === "smart" ? "smart" : "standard",
-          price: Number(price),
-          productionDays: Number(productionDays),
-          enabled: enabled !== "no",
-        };
-      });
     setPending(true);
     try {
       await saveProductFn({
@@ -287,6 +290,7 @@ function ProductForm({
             .filter(Boolean),
           mediaIds,
           variants,
+          specifications,
         },
       });
       toast.success("Товар сохранён");
@@ -394,20 +398,12 @@ function ProductForm({
         label="Материалы через запятую"
         defaultValue={(item.materialNames ?? []).join(", ")}
       />
-      <label className="text-sm">
-        Варианты — строка: размер; standard|smart; цена_руб; срок_дней; yes|no
-        <textarea
-          name="variants"
-          defaultValue={(item.variants ?? [])
-            .map(
-              (variant: any) =>
-                `${variant.sizeCode}; ${variant.system}; ${variant.price}; ${variant.productionDays}; ${variant.enabled ? "yes" : "no"}`,
-            )
-            .join("\n")}
-          className="mt-1 min-h-28 w-full border border-hairline bg-background p-2 font-mono text-xs"
-          placeholder="M; standard; 8900; 7; yes"
-        />
-      </label>
+      <VariantEditor data={data} variants={variants} onChange={setVariants} />
+      <SpecificationEditor
+        variants={variants}
+        items={specifications}
+        onChange={setSpecifications}
+      />
       <MediaPicker data={data} selected={mediaIds} onChange={setMediaIds} />
       <button
         disabled={pending}
@@ -416,6 +412,294 @@ function ProductForm({
         {pending ? "Сохраняем…" : "Сохранить товар"}
       </button>
     </form>
+  );
+}
+
+const measurementFields = [
+  ["outerDiameterMm", "Внешний Ø, мм"],
+  ["outerWidthMm", "Внешняя ширина, мм"],
+  ["outerDepthMm", "Внешняя глубина, мм"],
+  ["outerHeightMm", "Высота, мм"],
+  ["innerDiameterMm", "Посадочный Ø, мм"],
+  ["innerHeightMm", "Посадочная высота, мм"],
+  ["plantingVolumeMl", "Объём, мл"],
+  ["reservoirVolumeMl", "Резервуар, мл"],
+  ["weightGrams", "Вес, г"],
+] as const;
+
+function VariantEditor({
+  data,
+  variants,
+  onChange,
+}: {
+  data: any;
+  variants: any[];
+  onChange: (value: any[]) => void;
+}) {
+  const update = (index: number, patch: any) =>
+    onChange(
+      variants.map((variant, itemIndex) =>
+        itemIndex === index ? { ...variant, ...patch } : variant,
+      ),
+    );
+  const updateMeasurement = (index: number, field: string, value: string) => {
+    const number = value === "" ? null : Number(value);
+    update(index, { measurements: { ...variants[index].measurements, [field]: number } });
+  };
+  return (
+    <fieldset>
+      <div className="flex items-center justify-between">
+        <legend className="text-sm">Варианты и размеры</legend>
+        <button
+          type="button"
+          onClick={() =>
+            onChange([
+              ...variants,
+              {
+                sizeCode: "M",
+                system: "standard",
+                price: 0,
+                productionDays: 7,
+                enabled: true,
+                measurements: { outerHeightMm: null, scaleReference: "plant" },
+              },
+            ])
+          }
+          className="text-xs underline"
+        >
+          Добавить вариант
+        </button>
+      </div>
+      <div className="mt-3 space-y-4">
+        {variants.map((variant, index) => (
+          <article
+            key={`${variant.id ?? "new"}-${index}`}
+            className="border border-hairline bg-surface p-4"
+          >
+            <div className="grid gap-3 md:grid-cols-5">
+              <label className="text-xs">
+                Размер
+                <select
+                  value={variant.sizeCode}
+                  onChange={(event) => update(index, { sizeCode: event.target.value })}
+                  className="mt-1 w-full border border-hairline bg-background p-2 text-sm"
+                >
+                  {data.sizes.map((size: any) => (
+                    <option key={size.code} value={size.code}>
+                      {size.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="text-xs">
+                Исполнение
+                <select
+                  value={variant.system}
+                  onChange={(event) => update(index, { system: event.target.value })}
+                  className="mt-1 w-full border border-hairline bg-background p-2 text-sm"
+                >
+                  <option value="standard">Standard</option>
+                  <option value="smart">NOIR SMART</option>
+                </select>
+              </label>
+              <label className="text-xs">
+                Цена, ₽
+                <input
+                  type="number"
+                  min="0"
+                  value={variant.price}
+                  onChange={(event) => update(index, { price: Number(event.target.value) })}
+                  className="mt-1 w-full border border-hairline bg-background p-2 text-sm"
+                />
+              </label>
+              <label className="text-xs">
+                Срок, дней
+                <input
+                  type="number"
+                  min="0"
+                  value={variant.productionDays}
+                  onChange={(event) =>
+                    update(index, { productionDays: Number(event.target.value) })
+                  }
+                  className="mt-1 w-full border border-hairline bg-background p-2 text-sm"
+                />
+              </label>
+              <div className="flex items-end justify-between gap-2 text-xs">
+                <label className="pb-2">
+                  <input
+                    type="checkbox"
+                    checked={variant.enabled}
+                    onChange={(event) => update(index, { enabled: event.target.checked })}
+                    className="mr-1"
+                  />
+                  Доступен
+                </label>
+                <button
+                  type="button"
+                  disabled={variants.length === 1}
+                  onClick={() => onChange(variants.filter((_, itemIndex) => itemIndex !== index))}
+                  className="pb-2 text-destructive underline disabled:opacity-30"
+                >
+                  Удалить
+                </button>
+              </div>
+            </div>
+            <div className="mt-4 grid gap-3 sm:grid-cols-3">
+              {measurementFields.map(([field, label]) => (
+                <label key={field} className="text-xs">
+                  {label}
+                  <input
+                    type="number"
+                    min="1"
+                    value={variant.measurements?.[field] ?? ""}
+                    onChange={(event) => updateMeasurement(index, field, event.target.value)}
+                    className="mt-1 w-full border border-hairline bg-background p-2 text-sm"
+                  />
+                </label>
+              ))}
+              <label className="text-xs">
+                Шкала масштаба
+                <select
+                  value={variant.measurements?.scaleReference ?? "plant"}
+                  onChange={(event) =>
+                    update(index, {
+                      measurements: { ...variant.measurements, scaleReference: event.target.value },
+                    })
+                  }
+                  className="mt-1 w-full border border-hairline bg-background p-2 text-sm"
+                >
+                  <option value="plant">Растение</option>
+                  <option value="person">Человек</option>
+                  <option value="interior">Интерьер</option>
+                  <option value="none">Не показывать</option>
+                </select>
+              </label>
+            </div>
+          </article>
+        ))}
+      </div>
+    </fieldset>
+  );
+}
+
+function SpecificationEditor({
+  variants,
+  items,
+  onChange,
+}: {
+  variants: any[];
+  items: any[];
+  onChange: (value: any[]) => void;
+}) {
+  const update = (index: number, patch: any) =>
+    onChange(items.map((item, itemIndex) => (itemIndex === index ? { ...item, ...patch } : item)));
+  return (
+    <fieldset>
+      <div className="flex items-center justify-between">
+        <legend className="text-sm">Группы характеристик</legend>
+        <button
+          type="button"
+          onClick={() =>
+            onChange([
+              ...items,
+              {
+                sectionTitle: "Характеристики",
+                sectionOrder: 0,
+                code: "custom",
+                label: "",
+                value: "",
+                unit: "",
+                sortOrder: items.length,
+                variantKey: null,
+              },
+            ])
+          }
+          className="text-xs underline"
+        >
+          Добавить строку
+        </button>
+      </div>
+      <datalist id="specification-codes">
+        <option value="material" />
+        <option value="use" />
+        <option value="drainage" />
+        <option value="components" />
+        <option value="warranty" />
+        <option value="care" />
+        <option value="reservoir" />
+        <option value="indicator" />
+      </datalist>
+      <div className="mt-3 space-y-3">
+        {items.map((item, index) => (
+          <article
+            key={item.id ?? `${item.code}-${index}`}
+            className="grid gap-2 border border-hairline p-3 md:grid-cols-4"
+          >
+            <input
+              value={item.sectionTitle}
+              onChange={(event) => update(index, { sectionTitle: event.target.value })}
+              placeholder="Группа"
+              className="border border-hairline bg-background p-2 text-sm"
+            />
+            <input
+              list="specification-codes"
+              value={item.code}
+              onChange={(event) => update(index, { code: event.target.value })}
+              placeholder="Код"
+              className="border border-hairline bg-background p-2 text-sm"
+            />
+            <input
+              value={item.label}
+              onChange={(event) => update(index, { label: event.target.value })}
+              placeholder="Подпись"
+              className="border border-hairline bg-background p-2 text-sm"
+            />
+            <input
+              value={item.value}
+              onChange={(event) => update(index, { value: event.target.value })}
+              placeholder="Значение"
+              className="border border-hairline bg-background p-2 text-sm"
+            />
+            <input
+              value={item.unit ?? ""}
+              onChange={(event) => update(index, { unit: event.target.value || null })}
+              placeholder="Единица"
+              className="border border-hairline bg-background p-2 text-sm"
+            />
+            <select
+              value={item.variantKey ?? ""}
+              onChange={(event) => update(index, { variantKey: event.target.value || null })}
+              className="border border-hairline bg-background p-2 text-sm"
+            >
+              <option value="">Для всех исполнений</option>
+              {variants.map((variant) => (
+                <option
+                  key={`${variant.sizeCode}:${variant.system}`}
+                  value={`${variant.sizeCode}:${variant.system}`}
+                >
+                  {variant.sizeCode} · {variant.system === "smart" ? "SMART" : "Standard"}
+                </option>
+              ))}
+            </select>
+            <input
+              type="number"
+              min="0"
+              value={item.sectionOrder ?? 0}
+              onChange={(event) => update(index, { sectionOrder: Number(event.target.value) })}
+              title="Порядок группы"
+              className="border border-hairline bg-background p-2 text-sm"
+            />
+            <button
+              type="button"
+              onClick={() => onChange(items.filter((_, itemIndex) => itemIndex !== index))}
+              className="text-left text-sm text-destructive underline"
+            >
+              Удалить строку
+            </button>
+          </article>
+        ))}
+      </div>
+    </fieldset>
   );
 }
 

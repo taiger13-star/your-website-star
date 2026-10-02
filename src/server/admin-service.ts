@@ -11,6 +11,9 @@ import {
   productColors,
   productImages,
   productMaterials,
+  productSpecificationSections,
+  productSpecifications,
+  productVariantMeasurements,
   products,
   productVariants,
   sizes,
@@ -41,8 +44,36 @@ export type AdminProductInput = {
     price: number;
     productionDays: number;
     enabled: boolean;
+    measurements: {
+      outerWidthMm?: number | null;
+      outerDepthMm?: number | null;
+      outerDiameterMm?: number | null;
+      outerHeightMm?: number | null;
+      innerWidthMm?: number | null;
+      innerDepthMm?: number | null;
+      innerDiameterMm?: number | null;
+      innerHeightMm?: number | null;
+      plantingVolumeMl?: number | null;
+      reservoirVolumeMl?: number | null;
+      weightGrams?: number | null;
+      scaleReference?: "plant" | "person" | "interior" | "none";
+    };
+  }[];
+  specifications: {
+    sectionTitle: string;
+    sectionOrder: number;
+    code: string;
+    label: string;
+    value: string;
+    unit?: string | null;
+    sortOrder: number;
+    variantKey?: string | null;
   }[];
 };
+
+function variantKey(variant: Pick<AdminProductInput["variants"][number], "sizeCode" | "system">) {
+  return `${variant.sizeCode}:${variant.system}`;
+}
 
 function cleanSlug(value: string) {
   return value
@@ -58,6 +89,9 @@ export async function getAdminSnapshot() {
     collectionRows,
     productRows,
     variants,
+    measurements,
+    specificationSections,
+    specifications,
     colorLinks,
     materialLinks,
     imageLinks,
@@ -78,6 +112,12 @@ export async function getAdminSnapshot() {
       .leftJoin(collections, eq(products.collectionId, collections.id))
       .orderBy(desc(products.updatedAt)),
     db.select().from(productVariants),
+    db.select().from(productVariantMeasurements),
+    db
+      .select()
+      .from(productSpecificationSections)
+      .orderBy(asc(productSpecificationSections.sortOrder)),
+    db.select().from(productSpecifications).orderBy(asc(productSpecifications.sortOrder)),
     db
       .select({ productId: productColors.productId, colorId: productColors.colorId })
       .from(productColors),
@@ -109,6 +149,28 @@ export async function getAdminSnapshot() {
       ...product,
       collectionName: collectionName ?? "Без коллекции",
       variants: variants.filter((item) => item.productId === product.id),
+      specifications: specificationSections
+        .filter((section) => section.productId === product.id)
+        .flatMap((section) =>
+          specifications
+            .filter((specification) => specification.sectionId === section.id)
+            .map((specification) => ({
+              ...specification,
+              sectionTitle: section.title,
+              sectionOrder: section.sortOrder,
+              variantKey: specification.variantId
+                ? (() => {
+                    const variant = variants.find((item) => item.id === specification.variantId);
+                    return variant ? variantKey(variant) : null;
+                  })()
+                : null,
+            })),
+        ),
+      measurements: measurements.filter((measurement) =>
+        variants.some(
+          (variant) => variant.productId === product.id && variant.id === measurement.variantId,
+        ),
+      ),
       colorIds: colorLinks
         .filter((item) => item.productId === product.id)
         .map((item) => item.colorId),
@@ -162,11 +224,65 @@ export async function saveProduct(input: AdminProductInput) {
       tx.delete(productColors).where(eq(productColors.productId, productId)),
       tx.delete(productMaterials).where(eq(productMaterials.productId, productId)),
       tx.delete(productImages).where(eq(productImages.productId, productId)),
+      tx
+        .delete(productSpecificationSections)
+        .where(eq(productSpecificationSections.productId, productId)),
     ]);
-    if (input.variants.length)
-      await tx
-        .insert(productVariants)
-        .values(input.variants.map((variant) => ({ ...variant, productId })));
+    const createdVariants = await tx
+      .insert(productVariants)
+      .values(
+        input.variants.map(({ measurements: _measurements, ...variant }) => ({
+          ...variant,
+          productId,
+        })),
+      )
+      .returning();
+    await tx.insert(productVariantMeasurements).values(
+      createdVariants.map((variant) => {
+        const source = input.variants.find((item) => variantKey(item) === variantKey(variant))!;
+        return { variantId: variant.id, ...source.measurements, updatedAt: new Date() };
+      }),
+    );
+    const variantIds = new Map(createdVariants.map((variant) => [variantKey(variant), variant.id]));
+    const groupedSpecifications = input.specifications.reduce((groups, item) => {
+      const key = `${item.sectionOrder}:${item.sectionTitle.trim()}`;
+      const group = groups.get(key) ?? [];
+      group.push(item);
+      groups.set(key, group);
+      return groups;
+    }, new Map<string, AdminProductInput["specifications"]>());
+    for (const [, group] of groupedSpecifications) {
+      const first = group?.[0];
+      if (!first) continue;
+      const [section] = await tx
+        .insert(productSpecificationSections)
+        .values({
+          productId,
+          title: first.sectionTitle.trim(),
+          sortOrder: first.sectionOrder,
+          updatedAt: new Date(),
+        })
+        .returning({ id: productSpecificationSections.id });
+      await tx.insert(productSpecifications).values(
+        group.map((specification) => {
+          const variantId = specification.variantKey
+            ? variantIds.get(specification.variantKey)
+            : null;
+          if (specification.variantKey && !variantId)
+            throw new Error(`Не найден вариант для характеристики ${specification.label}.`);
+          return {
+            sectionId: section!.id,
+            variantId,
+            code: specification.code.trim(),
+            label: specification.label.trim(),
+            value: specification.value.trim(),
+            unit: specification.unit?.trim() || null,
+            sortOrder: specification.sortOrder,
+            updatedAt: new Date(),
+          };
+        }),
+      );
+    }
     if (input.colorIds.length)
       await tx
         .insert(productColors)

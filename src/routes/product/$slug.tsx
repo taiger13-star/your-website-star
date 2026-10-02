@@ -2,8 +2,12 @@ import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 
+import { DimensionOverlay, ScaleReference } from "@/components/product/DimensionOverlay";
+import { SmartComparison } from "@/components/product/SmartComparison";
 import { Breadcrumbs } from "@/components/site/Breadcrumbs";
 import { formatPrice } from "@/lib/format";
+import { displaySize, formatSpecification, resolveSpecifications } from "@/lib/product-details";
+import { getProductSmartPrices } from "@/lib/smart-comparison";
 import { useCatalog } from "@/store/catalog";
 import { useCart } from "@/store/cart";
 import { useShopUI } from "@/store/ui";
@@ -18,6 +22,7 @@ function ProductPage() {
   const { openCart } = useShopUI();
   const [variantId, setVariantId] = useState(product?.variants[0]?.id ?? "");
   const [colorId, setColorId] = useState(product?.colors[0]?.id ?? "");
+  const [imageIndex, setImageIndex] = useState(0);
   const variant = useMemo(
     () => product?.variants.find((item) => item.id === variantId),
     [product, variantId],
@@ -31,10 +36,13 @@ function ProductPage() {
         </Link>
       </div>
     );
+
   const selectedColor = product.colors.find((item) => item.id === colorId);
   const selectedSystem = variant.system;
   const systemVariants = product.variants.filter((item) => item.system === selectedSystem);
   const smartAvailable = product.variants.some((item) => item.system === "smart");
+  const smartPrices = getProductSmartPrices(product, variant.sizeCode);
+  const specifications = resolveSpecifications(product.detailSections, variant.id);
   const setSystem = (system: "standard" | "smart") => {
     const matchingSize = product.variants.find(
       (item) => item.system === system && item.sizeCode === variant.sizeCode,
@@ -49,7 +57,7 @@ function ProductPage() {
       productId: product.id,
       variantId: variant.id,
       sku: product.sku,
-      size: variant.sizeCode,
+      size: displaySize(variant.sizeCode, variant.measurements),
       bodyColor: selectedColor.id,
       insertColor: selectedColor.id,
       system: variant.system,
@@ -59,6 +67,7 @@ function ProductPage() {
     toast.success("Товар добавлен в корзину");
     openCart();
   };
+
   return (
     <div className="container-page py-10 md:py-14">
       <Breadcrumbs
@@ -68,17 +77,37 @@ function ProductPage() {
           { label: product.name },
         ]}
       />
-      <div className="mt-7 grid gap-10 lg:grid-cols-2">
-        <div className="grid gap-3 sm:grid-cols-2">
-          {product.images.map((image, index) => (
+      <div className="mt-7 grid gap-10 lg:grid-cols-[minmax(0,1.08fr)_minmax(20rem,.92fr)] lg:items-start">
+        <div className="lg:sticky lg:top-7">
+          <div className="relative aspect-[4/5] overflow-hidden bg-secondary">
             <img
-              key={image}
-              src={image}
-              alt={`${product.name} — фото ${index + 1}`}
-              className="aspect-[4/5] w-full bg-secondary object-cover"
+              src={product.images[imageIndex] ?? product.images[0] ?? "/favicon.svg"}
+              alt={`${product.name} — фото ${imageIndex + 1}`}
+              className="h-full w-full object-cover"
             />
-          ))}
+            <DimensionOverlay sizeCode={variant.sizeCode} measurements={variant.measurements} />
+            <div className="absolute left-4 top-4 bg-ink/80 px-3 py-2 text-[10px] uppercase tracking-[0.14em] text-sand backdrop-blur-sm">
+              {displaySize(variant.sizeCode, variant.measurements)}
+            </div>
+          </div>
+          {product.images.length > 1 ? (
+            <div className="mt-3 grid grid-cols-4 gap-3">
+              {product.images.map((image, index) => (
+                <button
+                  key={image}
+                  type="button"
+                  onClick={() => setImageIndex(index)}
+                  aria-label={`Показать фото ${index + 1}`}
+                  aria-pressed={imageIndex === index}
+                  className={`aspect-[4/5] overflow-hidden border ${imageIndex === index ? "border-ink" : "border-hairline"}`}
+                >
+                  <img src={image} alt="" className="h-full w-full object-cover" />
+                </button>
+              ))}
+            </div>
+          ) : null}
         </div>
+
         <section>
           <p className="label-caps text-taupe">{product.collectionName}</p>
           <h1 className="display-lg mt-4">{product.name}</h1>
@@ -90,17 +119,13 @@ function ProductPage() {
           ) : (
             <>
               <fieldset className="mt-8">
-                <legend className="label-caps text-taupe">Исполнение одного дизайна</legend>
+                <legend className="label-caps text-taupe">Исполнение</legend>
                 <div className={`mt-3 grid gap-2 ${smartAvailable ? "sm:grid-cols-2" : ""}`}>
                   <button
                     type="button"
                     aria-pressed={selectedSystem === "standard"}
                     onClick={() => setSystem("standard")}
-                    className={`border p-4 text-left transition-colors ${
-                      selectedSystem === "standard"
-                        ? "border-ink bg-secondary"
-                        : "border-hairline hover:border-ink/50"
-                    }`}
+                    className={`border p-4 text-left transition-colors ${selectedSystem === "standard" ? "border-ink bg-secondary" : "border-hairline hover:border-ink/50"}`}
                   >
                     <span className="label-caps text-taupe">Standard</span>
                     <span className="mt-2 block text-sm text-ink">
@@ -112,11 +137,7 @@ function ProductPage() {
                       type="button"
                       aria-pressed={selectedSystem === "smart"}
                       onClick={() => setSystem("smart")}
-                      className={`border p-4 text-left transition-colors ${
-                        selectedSystem === "smart"
-                          ? "border-ink bg-ink text-sand"
-                          : "border-hairline hover:border-ink/50"
-                      }`}
+                      className={`border p-4 text-left transition-colors ${selectedSystem === "smart" ? "border-ink bg-ink text-sand" : "border-hairline hover:border-ink/50"}`}
                     >
                       <span
                         className={`label-caps ${selectedSystem === "smart" ? "text-sand" : "text-taupe"}`}
@@ -138,31 +159,42 @@ function ProductPage() {
                   </p>
                 ) : null}
               </fieldset>
+
+              {smartAvailable ? (
+                <div className="mt-5">
+                  <SmartComparison prices={smartPrices} compact />
+                  <Link
+                    to="/smart"
+                    className="mt-3 inline-block text-xs uppercase tracking-[0.14em] text-ink underline underline-offset-4"
+                  >
+                    Посмотреть, как работает NOIR SMART
+                  </Link>
+                </div>
+              ) : null}
+
               <fieldset className="mt-6">
                 <legend className="label-caps text-taupe">Размер</legend>
-                <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                <div className="mt-3 grid gap-2">
                   {systemVariants.map((item) => (
                     <button
                       key={item.id}
                       type="button"
                       aria-pressed={variantId === item.id}
                       onClick={() => setVariantId(item.id)}
-                      className={`flex items-center justify-between border p-3 text-left text-sm transition-colors ${
-                        variantId === item.id
-                          ? "border-ink bg-secondary"
-                          : "border-hairline hover:border-ink/50"
-                      }`}
+                      className={`grid gap-1 border p-4 text-left text-sm transition-colors sm:grid-cols-[1fr_auto] sm:items-center ${variantId === item.id ? "border-ink bg-secondary" : "border-hairline hover:border-ink/50"}`}
                     >
-                      <span>{item.sizeCode}</span>
+                      <span>{displaySize(item.sizeCode, item.measurements)}</span>
                       <span className="text-ink-soft">
                         {formatPrice(item.price)} · {item.productionDays} дн.
                       </span>
                     </button>
                   ))}
                 </div>
+                <ScaleReference measurements={variant.measurements} />
               </fieldset>
+
               <fieldset className="mt-6">
-                <legend className="label-caps text-taupe">Цвет</legend>
+                <legend className="label-caps text-taupe">Цвет корпуса</legend>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {product.colors.map((color) => (
                     <label
@@ -171,7 +203,7 @@ function ProductPage() {
                     >
                       <input
                         type="radio"
-                        name="color"
+                        name="body-color"
                         checked={colorId === color.id}
                         onChange={() => setColorId(color.id)}
                         className="mr-2"
@@ -180,9 +212,18 @@ function ProductPage() {
                     </label>
                   ))}
                 </div>
+                <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
+                  Внутреннее исполнение определяется выбранной системой. Отдельный выбор цвета
+                  вставки появится в будущем конфигураторе.
+                </p>
               </fieldset>
               <div className="mt-8 flex items-center justify-between border-t border-hairline pt-6">
-                <p className="font-display text-3xl">{formatPrice(variant.price)}</p>
+                <div>
+                  <p className="font-display text-3xl">{formatPrice(variant.price)}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Изготавливается за {variant.productionDays} дн.
+                  </p>
+                </div>
                 <button
                   type="button"
                   onClick={addToCart}
@@ -196,6 +237,36 @@ function ProductPage() {
           )}
         </section>
       </div>
+
+      {specifications.length ? (
+        <section className="mt-16 border-t border-hairline pt-10 md:mt-24 md:pt-14">
+          <p className="label-caps text-taupe">Подробности объекта</p>
+          <h2 className="display-md mt-3">Характеристики</h2>
+          <div className="mt-8 grid gap-7 lg:grid-cols-2">
+            {specifications.map((section) => (
+              <article
+                key={section.id}
+                className="border border-hairline bg-surface-raised p-5 md:p-7"
+              >
+                <h3 className="font-display text-3xl">{section.title}</h3>
+                <dl className="mt-5 divide-y divide-hairline border-t border-hairline">
+                  {section.items.map((item) => (
+                    <div
+                      key={item.id}
+                      className="grid grid-cols-[minmax(0,1fr)_auto] gap-4 py-3 text-sm"
+                    >
+                      <dt className="text-muted-foreground">{item.label}</dt>
+                      <dd className="max-w-[16rem] text-right text-ink">
+                        {formatSpecification(item)}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              </article>
+            ))}
+          </div>
+        </section>
+      ) : null}
     </div>
   );
 }

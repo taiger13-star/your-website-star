@@ -34,8 +34,8 @@ import textureShot from "@/assets/details/texture.jpg";
 
 import type { ShopSystem, SizeCode } from "@/store/cart";
 
-export type CategoryId = "planters" | "vases" | "decor" | "smart";
-export type CollectionId = "essential" | "flow" | "soft" | "architecture" | "smart" | "limited";
+export type CategoryId = "planters" | "vases" | "decor";
+export type CollectionId = "essential" | "flow" | "soft" | "architecture" | "limited";
 export type ColorId = "ivory" | "sand" | "stone" | "graphite" | "black" | "sage" | "terracotta";
 export type Origin = "noir-original" | "third-party";
 
@@ -43,7 +43,6 @@ export const CATEGORIES: { id: CategoryId; label: string }[] = [
   { id: "planters", label: "Кашпо" },
   { id: "vases", label: "Вазы" },
   { id: "decor", label: "Декор" },
-  { id: "smart", label: "NOIR SMART" },
 ];
 
 export const COLLECTIONS: {
@@ -89,15 +88,6 @@ export const COLLECTIONS: {
     description:
       "Ступени, грани, арки. Изделия, которые работают как маленькие архитектурные акценты — в холлах, переговорных, гостиных.",
     cover: arch01,
-  },
-  {
-    id: "smart",
-    name: "NOIR SMART",
-    title: "SMART",
-    tagline: "Кашпо с системой автополива",
-    description:
-      "Та же дизайнерская форма, но с резервуаром воды, капиллярной подачей и контролем уровня. Растение получает влагу само.",
-    cover: smart01,
   },
   {
     id: "limited",
@@ -558,10 +548,10 @@ export const PRODUCTS: Product[] = [
     releasedAt: "2026-02-28",
   }),
   make({
-    id: "noir-smart-01",
-    name: "NOIR SMART 01",
-    collection: "smart",
-    category: "smart",
+    id: "noir-essential-05",
+    name: "NOIR ESSENTIAL 05",
+    collection: "essential",
+    category: "planters",
     form: "self-watering",
     short: "Кашпо с автополивом и прозрачным окном уровня воды.",
     description:
@@ -575,10 +565,10 @@ export const PRODUCTS: Product[] = [
     releasedAt: "2026-01-20",
   }),
   make({
-    id: "noir-smart-02",
-    name: "NOIR SMART 02",
-    collection: "smart",
-    category: "smart",
+    id: "noir-essential-06",
+    name: "NOIR ESSENTIAL 06",
+    collection: "essential",
+    category: "planters",
     form: "self-watering-ribbed",
     short: "Крупное кашпо NOIR SMART с вертикальным рифлением.",
     description:
@@ -591,10 +581,10 @@ export const PRODUCTS: Product[] = [
     releasedAt: "2026-08-05",
   }),
   make({
-    id: "noir-smart-03",
-    name: "NOIR SMART 03",
-    collection: "smart",
-    category: "smart",
+    id: "noir-essential-07",
+    name: "NOIR ESSENTIAL 07",
+    collection: "essential",
+    category: "planters",
     form: "self-watering-japandi",
     short: "Japandi-кашпо NOIR SMART с мягким прямоугольным профилем.",
     description:

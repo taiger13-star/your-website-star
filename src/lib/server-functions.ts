@@ -4,12 +4,42 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 const tokenSchema = z.object({ token: z.string().regex(/^[A-Za-z]{32}$/) });
+const measurementValue = z.number().int().positive().nullable().optional();
+const measurementsSchema = z.object({
+  outerWidthMm: measurementValue,
+  outerDepthMm: measurementValue,
+  outerDiameterMm: measurementValue,
+  outerHeightMm: measurementValue,
+  innerWidthMm: measurementValue,
+  innerDepthMm: measurementValue,
+  innerDiameterMm: measurementValue,
+  innerHeightMm: measurementValue,
+  plantingVolumeMl: measurementValue,
+  reservoirVolumeMl: measurementValue,
+  weightGrams: measurementValue,
+  scaleReference: z.enum(["plant", "person", "interior", "none"]).optional(),
+});
 const variantSchema = z.object({
   sizeCode: z.string().min(1),
   system: z.enum(["standard", "smart"]),
   price: z.number().int().nonnegative(),
   productionDays: z.number().int().min(0).max(3650),
   enabled: z.boolean(),
+  measurements: measurementsSchema,
+});
+const specificationSchema = z.object({
+  sectionTitle: z.string().trim().min(1).max(120),
+  sectionOrder: z.number().int().min(0).max(100),
+  code: z.string().trim().min(1).max(80),
+  label: z.string().trim().min(1).max(120),
+  value: z.string().trim().min(1).max(2000),
+  unit: z.string().trim().max(32).nullable().optional(),
+  sortOrder: z.number().int().min(0).max(100),
+  variantKey: z
+    .string()
+    .regex(/^[^:]+:(standard|smart)$/)
+    .nullable()
+    .optional(),
 });
 const productSchema = z.object({
   id: z.string().uuid().optional(),
@@ -30,6 +60,7 @@ const productSchema = z.object({
   materialNames: z.array(z.string()),
   mediaIds: z.array(z.string().uuid()),
   variants: z.array(variantSchema).min(1),
+  specifications: z.array(specificationSchema).max(80),
 });
 const collectionSchema = z.object({
   id: z.string().uuid().optional(),

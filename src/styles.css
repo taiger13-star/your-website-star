@@ -127,6 +127,67 @@
   }
 }
 
+@keyframes smart-water-cycle {
+  0%,
+  14% {
+    opacity: 0.34;
+    transform: scaleY(0.18);
+  }
+  34%,
+  74% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+  100% {
+    opacity: 0.34;
+    transform: scaleY(0.18);
+  }
+}
+
+@keyframes smart-flow-cycle {
+  0%,
+  30% {
+    opacity: 0.18;
+    stroke-dashoffset: 48;
+  }
+  48%,
+  76% {
+    opacity: 1;
+    stroke-dashoffset: 0;
+  }
+  100% {
+    opacity: 0.18;
+    stroke-dashoffset: -48;
+  }
+}
+
+@keyframes smart-float-cycle {
+  0%,
+  20% {
+    transform: translateY(34px);
+  }
+  44%,
+  76% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(34px);
+  }
+}
+
+@keyframes smart-step-cycle {
+  0%,
+  100% {
+    border-color: var(--color-hairline);
+    background-color: var(--color-background);
+  }
+  12%,
+  26% {
+    border-color: var(--color-sage);
+    background-color: color-mix(in oklab, var(--color-sage) 10%, var(--color-background));
+  }
+}
+
 :root {
   --radius: 0.25rem;
 
@@ -350,5 +411,38 @@
     group-hover &:where(*) {
       transform: scale(1.045);
     }
+  }
+}
+
+.smart-water,
+.smart-float {
+  transform-box: fill-box;
+  transform-origin: bottom center;
+}
+
+.smart-water {
+  animation: smart-water-cycle 5.6s ease-in-out infinite;
+}
+
+.smart-flow {
+  stroke-dasharray: 12 8;
+  animation: smart-flow-cycle 5.6s ease-in-out infinite;
+}
+
+.smart-float {
+  animation: smart-float-cycle 5.6s ease-in-out infinite;
+}
+
+.smart-step {
+  animation: smart-step-cycle 5.6s ease-in-out infinite;
+  animation-delay: var(--smart-step-delay, 0s);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .smart-water,
+  .smart-flow,
+  .smart-float,
+  .smart-step {
+    animation: none;
   }
 }

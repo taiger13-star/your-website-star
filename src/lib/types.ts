@@ -8,13 +8,6 @@ export type SizeCode = "S" | "M" | "L" | "XL";
 
 export type ShopSystem = "standard" | "smart";
 
-export type ColorId =
-  | "ivory"
-  | "sand"
-  | "stone"
-  | "graphite"
-  | "black"
-  | "sage"
-  | "terracotta";
+export type ColorId = "ivory" | "sand" | "stone" | "graphite" | "black" | "sage" | "terracotta";
 
-export type CategoryId = "planters" | "vases" | "decor" | "smart";
+export type CategoryId = "planters" | "vases" | "decor";

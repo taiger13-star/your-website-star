@@ -9,10 +9,18 @@ import {
   productColors,
   productImages,
   productMaterials,
+  productSpecificationSections,
+  productSpecifications,
+  productVariantMeasurements,
   products,
   productVariants,
   sizes,
 } from "./schema";
+import {
+  EMPTY_MEASUREMENTS,
+  type PublicSpecificationSection,
+  type VariantMeasurements,
+} from "@/lib/product-details";
 
 export type PublicCollection = {
   id: string;
@@ -46,7 +54,9 @@ export type PublicProduct = {
     system: "standard" | "smart";
     price: number;
     productionDays: number;
+    measurements: VariantMeasurements;
   }[];
+  detailSections: PublicSpecificationSection[];
   isNew: boolean;
   isBestseller: boolean;
   isComingSoon: boolean;
@@ -60,6 +70,28 @@ export type CatalogSnapshot = {
   sizes: { code: string; label: string }[];
   colors: { id: string; label: string; hex: string }[];
 };
+
+function publicMeasurements(
+  measurement: typeof productVariantMeasurements.$inferSelect | undefined,
+): VariantMeasurements {
+  if (!measurement) return EMPTY_MEASUREMENTS;
+  return {
+    outerWidthMm: measurement.outerWidthMm,
+    outerDepthMm: measurement.outerDepthMm,
+    outerDiameterMm: measurement.outerDiameterMm,
+    outerHeightMm: measurement.outerHeightMm,
+    innerWidthMm: measurement.innerWidthMm,
+    innerDepthMm: measurement.innerDepthMm,
+    innerDiameterMm: measurement.innerDiameterMm,
+    innerHeightMm: measurement.innerHeightMm,
+    plantingVolumeMl: measurement.plantingVolumeMl,
+    reservoirVolumeMl: measurement.reservoirVolumeMl,
+    weightGrams: measurement.weightGrams,
+    scaleReference: ["plant", "person", "interior", "none"].includes(measurement.scaleReference)
+      ? (measurement.scaleReference as VariantMeasurements["scaleReference"])
+      : "plant",
+  };
+}
 
 export async function getPublicCatalog(): Promise<CatalogSnapshot> {
   const db = getDb();
@@ -79,7 +111,15 @@ export async function getPublicCatalog(): Promise<CatalogSnapshot> {
     db.select().from(colors).orderBy(asc(colors.sortOrder)),
   ]);
   const ids = productRows.map((row) => row.product.id);
-  const [variantRows, imageRows, colorLinks, materialLinks] = ids.length
+  const [
+    variantRows,
+    imageRows,
+    colorLinks,
+    materialLinks,
+    measurementRows,
+    sectionRows,
+    specificationRows,
+  ] = ids.length
     ? await Promise.all([
         db
           .select()
@@ -105,8 +145,15 @@ export async function getPublicCatalog(): Promise<CatalogSnapshot> {
           .from(productMaterials)
           .innerJoin(materials, eq(productMaterials.materialId, materials.id))
           .where(inArray(productMaterials.productId, ids)),
+        db.select().from(productVariantMeasurements),
+        db
+          .select()
+          .from(productSpecificationSections)
+          .where(inArray(productSpecificationSections.productId, ids))
+          .orderBy(asc(productSpecificationSections.sortOrder)),
+        db.select().from(productSpecifications).orderBy(asc(productSpecifications.sortOrder)),
       ])
-    : [[], [], [], []];
+    : [[], [], [], [], [], [], []];
 
   return {
     collections: collectionRows.map(({ collection, cover }) => ({ ...collection, cover })),
@@ -138,6 +185,27 @@ export async function getPublicCatalog(): Promise<CatalogSnapshot> {
           system,
           price,
           productionDays,
+          measurements: publicMeasurements(
+            measurementRows.find((measurement) => measurement.variantId === id),
+          ),
+        })),
+      detailSections: sectionRows
+        .filter((section) => section.productId === product.id)
+        .map((section) => ({
+          id: section.id,
+          title: section.title,
+          sortOrder: section.sortOrder,
+          items: specificationRows
+            .filter((specification) => specification.sectionId === section.id)
+            .map(({ id, variantId, code, label, value, unit, sortOrder }) => ({
+              id,
+              variantId,
+              code,
+              label,
+              value,
+              unit,
+              sortOrder,
+            })),
         })),
       isNew: product.isNew,
       isBestseller: product.isBestseller,

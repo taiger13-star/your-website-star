@@ -1,7 +1,18 @@
 import { and, eq } from "drizzle-orm";
 
 import { getDb } from "./db";
-import { colors, orderItems, orders, productColors, products, productVariants } from "./schema";
+import {
+  colors,
+  orderItems,
+  orders,
+  productColors,
+  products,
+  productSpecificationSections,
+  productSpecifications,
+  productVariantMeasurements,
+  productVariants,
+} from "./schema";
+import { EMPTY_MEASUREMENTS, resolveSpecifications } from "@/lib/product-details";
 
 export type CheckoutItem = {
   productId: string;
@@ -51,7 +62,48 @@ export async function createOrder(input: {
         .limit(1);
       if (!color) throw new Error("Выбранный цвет недоступен.");
       const quantity = Math.max(1, Math.min(99, Math.floor(item.quantity)));
-      return { product: variant.product, variant: variant.variant, color: color.color, quantity };
+      const [measurements, specificationRows] = await Promise.all([
+        db
+          .select()
+          .from(productVariantMeasurements)
+          .where(eq(productVariantMeasurements.variantId, variant.variant.id))
+          .limit(1),
+        db
+          .select({ section: productSpecificationSections, specification: productSpecifications })
+          .from(productSpecificationSections)
+          .innerJoin(
+            productSpecifications,
+            eq(productSpecifications.sectionId, productSpecificationSections.id),
+          )
+          .where(eq(productSpecificationSections.productId, variant.product.id)),
+      ]);
+      const sections = specificationRows.reduce<
+        {
+          id: string;
+          title: string;
+          sortOrder: number;
+          items: (typeof specificationRows)[number]["specification"][];
+        }[]
+      >((result, row) => {
+        const existing = result.find((section) => section.id === row.section.id);
+        if (existing) existing.items.push(row.specification);
+        else
+          result.push({
+            id: row.section.id,
+            title: row.section.title,
+            sortOrder: row.section.sortOrder,
+            items: [row.specification],
+          });
+        return result;
+      }, []);
+      return {
+        product: variant.product,
+        variant: variant.variant,
+        color: color.color,
+        quantity,
+        measurements: measurements[0] ?? EMPTY_MEASUREMENTS,
+        specifications: resolveSpecifications(sections, variant.variant.id),
+      };
     }),
   );
   const total = snapshots.reduce((sum, item) => sum + item.variant.price * item.quantity, 0);
@@ -84,6 +136,8 @@ export async function createOrder(input: {
           variantId: item.variant.id,
           productionDays: item.variant.productionDays,
           color: item.color,
+          measurements: item.measurements,
+          specifications: item.specifications,
         },
       })),
     );

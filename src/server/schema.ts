@@ -140,6 +140,63 @@ export const productVariants = pgTable(
   ],
 );
 
+/**
+ * Physical data stays separate from commercial data on a variant. It makes
+ * measurements queryable and lets the storefront render a dimension diagram
+ * without parsing prose or size labels.
+ */
+export const productVariantMeasurements = pgTable("product_variant_measurements", {
+  variantId: uuid("variant_id")
+    .primaryKey()
+    .references(() => productVariants.id, { onDelete: "cascade" }),
+  outerWidthMm: integer("outer_width_mm"),
+  outerDepthMm: integer("outer_depth_mm"),
+  outerDiameterMm: integer("outer_diameter_mm"),
+  outerHeightMm: integer("outer_height_mm"),
+  innerWidthMm: integer("inner_width_mm"),
+  innerDepthMm: integer("inner_depth_mm"),
+  innerDiameterMm: integer("inner_diameter_mm"),
+  innerHeightMm: integer("inner_height_mm"),
+  plantingVolumeMl: integer("planting_volume_ml"),
+  reservoirVolumeMl: integer("reservoir_volume_ml"),
+  weightGrams: integer("weight_grams"),
+  scaleReference: varchar("scale_reference", { length: 24 }).notNull().default("plant"),
+  createdAt,
+  updatedAt,
+});
+
+/** A product decides which technical groups it needs; categories do not. */
+export const productSpecificationSections = pgTable("product_specification_sections", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  productId: uuid("product_id")
+    .notNull()
+    .references(() => products.id, { onDelete: "cascade" }),
+  title: varchar("title", { length: 120 }).notNull(),
+  sortOrder: integer("sort_order").notNull().default(0),
+  createdAt,
+  updatedAt,
+});
+
+/**
+ * A row can be common to the object or override the common row for one
+ * size/system variant. Values remain intentionally textual: material care
+ * instructions and warranty wording are as important as numeric attributes.
+ */
+export const productSpecifications = pgTable("product_specifications", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  sectionId: uuid("section_id")
+    .notNull()
+    .references(() => productSpecificationSections.id, { onDelete: "cascade" }),
+  variantId: uuid("variant_id").references(() => productVariants.id, { onDelete: "cascade" }),
+  code: varchar("code", { length: 80 }).notNull(),
+  label: varchar("label", { length: 120 }).notNull(),
+  value: text("value").notNull(),
+  unit: varchar("unit", { length: 32 }),
+  sortOrder: integer("sort_order").notNull().default(0),
+  createdAt,
+  updatedAt,
+});
+
 export const productColors = pgTable(
   "product_colors",
   {

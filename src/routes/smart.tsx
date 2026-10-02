@@ -2,8 +2,12 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowDownToLine, Droplets, Gauge, Layers3, Sprout } from "lucide-react";
 
 import smartDetail from "@/assets/smart-detail.jpg";
+import { SmartComparison } from "@/components/product/SmartComparison";
+import { SmartCutaway } from "@/components/product/SmartCutaway";
 import { Breadcrumbs } from "@/components/site/Breadcrumbs";
 import { ctaGhostStyles, ctaStyles } from "@/components/site/Blocks";
+import { getSmartCatalogPrices } from "@/lib/smart-comparison";
+import { useCatalog } from "@/store/catalog";
 
 export const Route = createFileRoute("/smart")({
   head: () => ({
@@ -48,6 +52,8 @@ const features = [
 ] as const;
 
 function SmartPage() {
+  const { products } = useCatalog();
+  const prices = getSmartCatalogPrices(products);
   return (
     <>
       <div className="container-page pt-10 md:pt-14">
@@ -72,25 +78,19 @@ function SmartPage() {
         </div>
       </div>
 
+      <SmartCutaway />
+
       <section className="container-page py-16 md:py-24">
-        <p className="label-caps text-taupe">Выберите исполнение</p>
-        <div className="mt-7 grid gap-px border border-hairline bg-hairline md:grid-cols-2">
-          <article className="bg-background p-7 md:p-9">
-            <p className="label-caps text-taupe">Standard</p>
-            <h2 className="mt-4 font-display text-4xl text-foreground">Чистая форма</h2>
-            <p className="mt-5 max-w-md text-sm leading-relaxed text-ink-soft">
-              Дизайнерское кашпо с дренажом — для привычного самостоятельного полива. Та же
-              геометрия, те же размеры и палитра.
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,.9fr)_minmax(20rem,1.1fr)] lg:items-end">
+          <div>
+            <p className="label-caps text-taupe">Выберите сценарий ухода</p>
+            <h2 className="display-md mt-4">За что вы платите</h2>
+            <p className="prose-noir mt-5">
+              Standard сохраняет форму и дренаж. NOIR SMART добавляет полноценную систему ухода за
+              растением — без кабелей, насосов и лишних действий.
             </p>
-          </article>
-          <article className="bg-ink p-7 md:p-9">
-            <p className="label-caps text-sand">NOIR SMART</p>
-            <h2 className="mt-4 font-display text-4xl text-sand">Форма + система воды</h2>
-            <p className="mt-5 max-w-md text-sm leading-relaxed text-sand/75">
-              Тот же внешний дизайн, дополненный вставкой, резервуаром и контролем уровня воды.
-              Подходит, если хочется реже вспоминать о поливе.
-            </p>
-          </article>
+          </div>
+          <SmartComparison prices={prices} />
         </div>
       </section>
 
