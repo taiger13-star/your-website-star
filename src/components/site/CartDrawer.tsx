@@ -48,8 +48,8 @@ export function CartDrawer() {
             <div className="flex flex-1 flex-col items-center justify-center gap-5 px-8 text-center">
               <p className="display-md text-foreground">Корзина пуста</p>
               <p className="text-sm text-muted-foreground">
-                Выберите изделие в каталоге — размер, цвет и систему можно настроить в карточке
-                товара.
+                Выберите изделие в каталоге — размер, цвет корпуса и систему можно настроить в
+                карточке товара.
               </p>
               <SheetPrimitive.Description asChild>
                 <Link

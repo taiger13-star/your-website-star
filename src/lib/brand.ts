@@ -9,11 +9,25 @@ export const BRAND = {
   name: "NOIR ATELIER",
   values: "DESIGN · TECHNOLOGY · NATURE",
   valuesRu: "Дизайн. Технологии. Природа.",
+  tagline: "Предметы интерьера, созданные под ваше пространство.",
   heroLine:
     "Дизайнерские кашпо и предметы интерьера, созданные с помощью технологий нового поколения.",
   country: "Россия",
   production: "Изделия производятся под заказ",
 } as const;
+
+/**
+ * Отзывы публикуются только после проверки их у владельца бренда.
+ * Пока массив пуст, витрина отзывов намеренно не рендерится.
+ */
+export type Testimonial = {
+  quote: string;
+  author: string;
+  context: string;
+  image?: string;
+};
+
+export const TESTIMONIALS: Testimonial[] = [];
 
 /** Данные ниже — легко заменяемые placeholders. Не реальные реквизиты. */
 export const CONTACT = {
@@ -46,7 +60,7 @@ export const FOOTER_SECTIONS: { title: string; links: NavItem[] }[] = [
       { label: "Коллекции", to: "/collections" },
       { label: "NOIR SMART", to: "/smart" },
       { label: "Для бизнеса", to: "/business" },
-      { label: "Индивидуальный дизайн", to: "/custom" },
+      { label: "Индивидуальный проект", to: "/business" },
     ],
   },
   {
@@ -126,7 +140,7 @@ export const FAQ_ITEMS: FaqItem[] = [
   },
   {
     q: "Можно ли выбрать цвет?",
-    a: "Да. Базовая палитра: Ivory, Sand, Stone, Graphite, Black, Sage, Terracotta. В корпусе NOIR вы additionally можете выбрать цвет внутренней вставки. Оттенки передаются материалом — подкраской мы не работаем.",
+    a: "Да. Для корпуса доступна базовая палитра: Ivory, Sand, Stone, Graphite, Black, Sage, Terracotta. Оттенки передаются материалом — подкраской мы не работаем. Отдельный выбор цвета внутренней вставки появится вместе с будущим конфигуратором.",
   },
   {
     q: "Можно ли изменить размер?",

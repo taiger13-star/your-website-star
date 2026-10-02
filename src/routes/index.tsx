@@ -6,7 +6,7 @@ import heroImg from "@/assets/hero.jpg";
 import smartDetail from "@/assets/smart-detail.jpg";
 import atelierImg from "@/assets/atelier.jpg";
 import businessImg from "@/assets/business.jpg";
-import { BRAND } from "@/lib/brand";
+import { BRAND, TESTIMONIALS } from "@/lib/brand";
 import { JsonLd } from "@/components/site/JsonLd";
 import { ProductCard } from "@/components/product/ProductCard";
 import { ctaGhostStyles, ctaStyles } from "@/components/site/Blocks";
@@ -47,7 +47,6 @@ function IndexPage() {
           name: BRAND.name,
           slogan: BRAND.tagline,
           description: BRAND.heroLine,
-          foundingDate: BRAND.founded,
           areaServed: BRAND.country,
         }}
       />
@@ -57,7 +56,7 @@ function IndexPage() {
         <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_1fr] lg:gap-16">
           <div>
             <p className="label-caps text-taupe">
-              {BRAND.name} · {BRAND.country} · с {BRAND.founded}
+              {BRAND.name} · {BRAND.country} · под заказ
             </p>
             <h1 className="display-xl mt-6 text-foreground">{BRAND.tagline}</h1>
             <p className="prose-noir mt-7 max-w-xl">
@@ -97,10 +96,42 @@ function IndexPage() {
                 className="h-full w-full object-cover"
               />
             </div>
-            <figcaption className="label-caps mt-4 text-taupe">
-              NOIR Architecture · натуральное освещение, съёмка в интерьере
-            </figcaption>
+            <figcaption className="label-caps mt-4 text-taupe">NOIR Architecture</figcaption>
           </figure>
+        </div>
+      </section>
+
+      {/* PERSONALIZATION */}
+      <section className="border-y border-hairline bg-surface">
+        <div className="container-page py-16 md:py-20">
+          <div className="max-w-2xl">
+            <p className="label-caps text-taupe">Создано для вашего пространства</p>
+            <h2 className="display-md mt-4 text-foreground">
+              Форма остаётся выразительной, детали становятся вашими
+            </h2>
+          </div>
+          <div className="mt-10 grid gap-px border border-hairline bg-hairline md:grid-cols-3">
+            {[
+              [
+                "Размер и пропорции",
+                "Выберите размер из модельного ряда, чтобы объект точно работал в нише, на столе или в композиции.",
+              ],
+              [
+                "Цвет корпуса",
+                "Матовая палитра подобрана для современных интерьеров: от тёплого Ivory до графитового и терракотового.",
+              ],
+              [
+                "Сценарий ухода",
+                "Один внешний силуэт доступен в Standard-исполнении или с системой NOIR SMART для более редкого полива.",
+              ],
+            ].map(([title, description], index) => (
+              <article key={title} className="bg-background p-7 md:p-8">
+                <p className="label-caps text-taupe">0{index + 1}</p>
+                <h3 className="mt-8 font-display text-3xl text-foreground">{title}</h3>
+                <p className="mt-3 text-sm leading-relaxed text-ink-soft">{description}</p>
+              </article>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -169,30 +200,6 @@ function IndexPage() {
         </div>
       </section>
 
-      {/* BESTSELLERS */}
-      <section className="container-page py-16 md:py-24">
-        <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-          <div>
-            <p className="label-caps text-taupe">Выбор NOIR ATELIER</p>
-            <h2 className="display-md mt-4 text-foreground">
-              Изделия, которые выбирают чаще всего
-            </h2>
-          </div>
-          <Link
-            to="/catalog"
-            search={{ sort: "popular" }}
-            className="text-xs uppercase tracking-[0.18em] text-ink underline underline-offset-4"
-          >
-            Популярные модели
-          </Link>
-        </div>
-        <div className="mt-12 grid gap-x-5 gap-y-12 sm:grid-cols-2 lg:grid-cols-4">
-          {bestsellers.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
-      </section>
-
       {/* NOIR SMART */}
       <section className="border-y border-hairline bg-ink">
         <div className="container-page py-16 md:py-24">
@@ -225,6 +232,32 @@ function IndexPage() {
           </div>
         </div>
       </section>
+
+      {/* SELECTED PIECES */}
+      <section className="container-page py-16 md:py-24">
+        <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+          <div>
+            <p className="label-caps text-taupe">Выбор NOIR ATELIER</p>
+            <h2 className="display-md mt-4 text-foreground">
+              Предметы, которые создают характер пространства
+            </h2>
+          </div>
+          <Link
+            to="/catalog"
+            search={{ sort: "popular" }}
+            className="text-xs uppercase tracking-[0.18em] text-ink underline underline-offset-4"
+          >
+            Смотреть каталог
+          </Link>
+        </div>
+        <div className="mt-12 grid gap-x-5 gap-y-12 sm:grid-cols-2 lg:grid-cols-4">
+          {bestsellers.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
+      </section>
+
+      <Testimonials />
 
       {/* PRODUCTION */}
       <section className="container-page py-16 md:py-24">
@@ -267,8 +300,8 @@ function IndexPage() {
               <Link to="/about" className={ctaGhostStyles}>
                 О бренде
               </Link>
-              <Link to="/configurator" className={ctaStyles}>
-                Создайте свой NOIR
+              <Link to="/business" className={ctaStyles}>
+                Индивидуальный проект
               </Link>
             </div>
           </div>
@@ -323,5 +356,44 @@ function IndexPage() {
         </ul>
       </section>
     </>
+  );
+}
+
+function Testimonials() {
+  if (!TESTIMONIALS.length) return null;
+
+  return (
+    <section className="border-y border-hairline bg-surface">
+      <div className="container-page py-16 md:py-24">
+        <div className="max-w-2xl">
+          <p className="label-caps text-taupe">Опыт владельцев</p>
+          <h2 className="display-md mt-4 text-foreground">Предметы в реальных пространствах</h2>
+        </div>
+        <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+          {TESTIMONIALS.map((testimonial) => (
+            <figure
+              key={`${testimonial.author}-${testimonial.quote}`}
+              className="bg-background p-7 md:p-8"
+            >
+              {testimonial.image ? (
+                <img
+                  src={testimonial.image}
+                  alt={`Интерьер ${testimonial.author}`}
+                  className="mb-7 aspect-[4/3] w-full object-cover"
+                  loading="lazy"
+                />
+              ) : null}
+              <blockquote className="font-display text-2xl leading-snug text-foreground">
+                «{testimonial.quote}»
+              </blockquote>
+              <figcaption className="mt-7 text-sm text-ink-soft">
+                <span className="block text-ink">{testimonial.author}</span>
+                <span className="mt-1 block">{testimonial.context}</span>
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }

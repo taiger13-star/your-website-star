@@ -2,13 +2,20 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 export const Route = createFileRoute("/configurator")({
   component: () => (
     <div className="container-page py-24">
-      <h1 className="display-lg">Настройка изделия</h1>
+      <p className="label-caps text-taupe">NOIR ATELIER</p>
+      <h1 className="display-lg mt-4">Индивидуальное исполнение</h1>
       <p className="prose-noir mt-5">
-        Размер, цвет и систему можно выбрать в карточке каждого товара.
+        Размер, цвет корпуса и систему Standard или NOIR SMART можно выбрать в карточке каждого
+        изделия. Полный конфигуратор с отдельным подбором компонентов находится в разработке.
       </p>
-      <Link to="/catalog" className="mt-8 inline-block underline">
-        Открыть каталог
-      </Link>
+      <div className="mt-8 flex flex-wrap gap-3">
+        <Link to="/catalog" className="inline-block underline">
+          Открыть каталог
+        </Link>
+        <Link to="/business" className="inline-block underline">
+          Обсудить индивидуальный проект
+        </Link>
+      </div>
     </div>
   ),
 });
