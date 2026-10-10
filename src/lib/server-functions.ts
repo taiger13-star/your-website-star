@@ -19,12 +19,17 @@ const measurementsSchema = z.object({
   weightGrams: measurementValue,
   scaleReference: z.enum(["plant", "person", "interior", "none"]).optional(),
 });
+const packageValue = z.number().int().positive().nullable().optional();
 const variantSchema = z.object({
   sizeCode: z.string().min(1),
   system: z.enum(["standard", "smart"]),
   price: z.number().int().nonnegative(),
   productionDays: z.number().int().min(0).max(3650),
   enabled: z.boolean(),
+  packageLengthCm: packageValue,
+  packageWidthCm: packageValue,
+  packageHeightCm: packageValue,
+  packageWeightGrams: packageValue,
   measurements: measurementsSchema,
 });
 const specificationSchema = z.object({
@@ -90,8 +95,12 @@ export const createOrderFn = createServerFn({ method: "POST" })
       customerName: z.string().min(2).max(160),
       phone: z.string().min(5).max(60),
       email: z.string().email().optional().or(z.literal("")),
-      deliveryMethod: z.string().min(2).max(120),
-      deliveryAddress: z.string().max(1000).optional(),
+      delivery: z.object({
+        method: z.enum(["cdek_pvz", "cdek_courier"]),
+        cityCode: z.number().int().positive(),
+        pickupPointCode: z.string().trim().min(1).max(120).optional(),
+        deliveryAddress: z.string().trim().min(5).max(1000).optional(),
+      }),
       comment: z.string().max(2000).optional(),
       items: z
         .array(
@@ -108,6 +117,41 @@ export const createOrderFn = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { createOrder } = await import("../server/order-service");
     return createOrder(data);
+  });
+
+const checkoutItemSchema = z.object({
+  productId: z.string().uuid(),
+  variantId: z.string().uuid(),
+  quantity: z.number().int().min(1).max(99),
+});
+
+export const findCdekCitiesFn = createServerFn({ method: "GET" })
+  .validator(z.object({ query: z.string().trim().min(2).max(120) }))
+  .handler(async ({ data }) => {
+    const { findCdekCities } = await import("../server/cdek-service");
+    return findCdekCities(data.query);
+  });
+
+export const findCdekPickupPointsFn = createServerFn({ method: "GET" })
+  .validator(z.object({ cityCode: z.number().int().positive() }))
+  .handler(async ({ data }) => {
+    const { findCdekPickupPoints } = await import("../server/cdek-service");
+    return findCdekPickupPoints(data.cityCode);
+  });
+
+export const calculateCdekDeliveryFn = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      method: z.enum(["cdek_pvz", "cdek_courier"]),
+      cityCode: z.number().int().positive(),
+      pickupPointCode: z.string().trim().min(1).max(120).optional(),
+      deliveryAddress: z.string().trim().min(5).max(1000).optional(),
+      items: z.array(checkoutItemSchema).min(1),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const { calculateCdekDelivery } = await import("../server/cdek-service");
+    return calculateCdekDelivery(data);
   });
 
 export const createProjectInquiryFn = createServerFn({ method: "POST" })

@@ -165,21 +165,23 @@ function Line({
   x1,
   y1,
   x2,
+  y2,
   x,
   y,
   label,
 }: {
-  x1: number;
-  y1: number;
-  x2: number;
-  x: number;
-  y: number;
+  x1: string | number;
+  y1: string | number;
+  x2: string | number;
+  y2: string | number;
+  x: string | number;
+  y: string | number;
   label: string;
 }) {
   return (
     <>
       <path
-        d={`M${x1} ${y1}H${x2}`}
+        d={`M${x1} ${y1}L${x2} ${y2}`}
         fill="none"
         stroke="currentColor"
         strokeOpacity="0.55"

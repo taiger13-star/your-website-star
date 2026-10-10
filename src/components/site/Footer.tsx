@@ -29,9 +29,10 @@ export function Footer() {
                 <h2 className="label-caps text-taupe">{section.title}</h2>
                 <ul className="mt-5 space-y-3">
                   {section.links.map((link) => (
-                    <li key={`${link.to}-${link.label}`}>
+                    <li key={`${link.to}-${link.hash ?? ""}-${link.label}`}>
                       <Link
                         to={link.to}
+                        {...(link.hash ? { hash: link.hash } : {})}
                         className="text-sm text-ink-soft transition-colors duration-300 hover:text-foreground"
                       >
                         {link.label}

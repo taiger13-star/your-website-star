@@ -2,6 +2,7 @@
 // @ts-nocheck
 import { useMemo } from "react";
 import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
+import { Search, X } from "lucide-react";
 
 import { Breadcrumbs } from "@/components/site/Breadcrumbs";
 import { EmptyState } from "@/components/site/EmptyState";
@@ -96,15 +97,32 @@ function CatalogPage() {
       </div>
       <div className="mt-8 grid gap-8 lg:grid-cols-[15rem_1fr]">
         <aside className="space-y-5 border-b border-hairline pb-6 lg:border-b-0 lg:border-r lg:pr-7">
-          <label className="block text-sm">
-            <span className="label-caps text-taupe">Поиск</span>
-            <input
-              value={search.q ?? ""}
-              onChange={(event) => update({ q: event.target.value || undefined })}
-              className="mt-2 w-full border border-hairline bg-background px-3 py-2"
-              placeholder="Название или форма"
-            />
-          </label>
+          <div>
+            <label htmlFor="catalog-search" className="label-caps text-taupe">
+              Поиск
+            </label>
+            <div className="mt-2 flex min-h-14 items-center gap-3 border-b border-ink/30 transition-colors duration-300 focus-within:border-ink">
+              <Search className="h-[18px] w-[18px] shrink-0 text-taupe" strokeWidth={1.25} />
+              <input
+                id="catalog-search"
+                type="search"
+                value={search.q ?? ""}
+                onChange={(event) => update({ q: event.target.value || undefined })}
+                className="min-w-0 flex-1 appearance-none bg-transparent py-3 font-display text-2xl leading-none text-foreground outline-none placeholder:text-taupe/80 [&::-webkit-search-cancel-button]:hidden"
+                placeholder="Найти изделие"
+              />
+              {search.q ? (
+                <button
+                  type="button"
+                  onClick={() => update({ q: undefined })}
+                  aria-label="Очистить поиск"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center text-taupe transition-colors hover:text-foreground focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-ink"
+                >
+                  <X className="h-4 w-4" strokeWidth={1.25} />
+                </button>
+              ) : null}
+            </div>
+          </div>
           <Select
             label="Коллекция"
             value={search.collection}

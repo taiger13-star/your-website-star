@@ -1,6 +1,7 @@
 import { and, eq } from "drizzle-orm";
 
 import { getDb } from "./db";
+import { calculateCdekDelivery } from "./cdek-service";
 import {
   colors,
   orderItems,
@@ -25,13 +26,25 @@ export async function createOrder(input: {
   customerName: string;
   phone: string;
   email?: string;
-  deliveryMethod: string;
-  deliveryAddress?: string;
+  delivery: {
+    method: "cdek_pvz" | "cdek_courier";
+    cityCode: number;
+    pickupPointCode?: string;
+    deliveryAddress?: string;
+  };
   comment?: string;
   items: CheckoutItem[];
 }) {
   const db = getDb();
   if (!input.items.length) throw new Error("Корзина пуста.");
+  const delivery = await calculateCdekDelivery({
+    ...input.delivery,
+    items: input.items.map(({ productId, variantId, quantity }) => ({
+      productId,
+      variantId,
+      quantity,
+    })),
+  });
   const snapshots = await Promise.all(
     input.items.map(async (item) => {
       const [variant] = await db
@@ -114,8 +127,18 @@ export async function createOrder(input: {
         customerName: input.customerName.trim(),
         phone: input.phone.trim(),
         email: input.email?.trim() || null,
-        deliveryMethod: input.deliveryMethod.trim(),
-        deliveryAddress: input.deliveryAddress?.trim() || null,
+        deliveryMethod: delivery.method,
+        deliveryAddress: input.delivery.deliveryAddress?.trim() || null,
+        cdekCityCode: input.delivery.cityCode,
+        cdekPointCode: delivery.pickupPoint?.code ?? null,
+        cdekPointAddress: delivery.pickupPoint?.address ?? null,
+        cdekTariffCode: delivery.tariffCode,
+        cdekTariffName: delivery.tariffName,
+        deliveryCost: delivery.cost,
+        deliveryCurrency: delivery.currency,
+        deliveryPeriodMin: delivery.periodMin,
+        deliveryPeriodMax: delivery.periodMax,
+        deliveryCalculatedAt: new Date(),
         comment: input.comment?.trim() || null,
         total,
       })

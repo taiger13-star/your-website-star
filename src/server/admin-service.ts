@@ -44,6 +44,10 @@ export type AdminProductInput = {
     price: number;
     productionDays: number;
     enabled: boolean;
+    packageLengthCm?: number | null;
+    packageWidthCm?: number | null;
+    packageHeightCm?: number | null;
+    packageWeightGrams?: number | null;
     measurements: {
       outerWidthMm?: number | null;
       outerDepthMm?: number | null;

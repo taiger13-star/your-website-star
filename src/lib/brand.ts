@@ -42,10 +42,10 @@ export const CONTACT = {
 export const PLACEHOLDER_NOTE =
   "Контакты и реквизиты — временные. Замените их перед запуском продаж.";
 
-export type NavItem = { label: string; to: string };
+export type NavItem = { label: string; to: string; hash?: string };
 
 export const NAV_LINKS: NavItem[] = [
-  { label: "Коллекции", to: "/collections" },
+  { label: "Коллекции", to: "/", hash: "collections" },
   { label: "Каталог", to: "/catalog" },
   { label: "NOIR SMART", to: "/smart" },
   { label: "Для бизнеса", to: "/business" },
@@ -57,7 +57,7 @@ export const FOOTER_SECTIONS: { title: string; links: NavItem[] }[] = [
     title: "Каталог",
     links: [
       { label: "Все изделия", to: "/catalog" },
-      { label: "Коллекции", to: "/collections" },
+      { label: "Коллекции", to: "/", hash: "collections" },
       { label: "NOIR SMART", to: "/smart" },
       { label: "Для бизнеса", to: "/business" },
       { label: "Индивидуальный проект", to: "/business" },

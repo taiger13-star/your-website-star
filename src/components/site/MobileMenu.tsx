@@ -36,10 +36,11 @@ export function MobileMenu() {
           <nav className="flex-1 overflow-y-auto px-6 py-8" aria-label="Мобильная навигация">
             <ul className="space-y-5">
               {NAV_LINKS.map((item) => (
-                <li key={item.to}>
+                <li key={`${item.to}-${item.hash ?? ""}`}>
                   <SheetPrimitive.Description asChild>
                     <Link
                       to={item.to}
+                      {...(item.hash ? { hash: item.hash } : {})}
                       onClick={closeMenu}
                       className="font-display text-2xl text-foreground"
                     >

@@ -18,7 +18,8 @@ export function formatNumber(value: number): string {
 
 /** Грамм: 420 г */
 export function formatWeight(grams: number): string {
-  if (grams >= 1000) return `${(grams / 1000).toLocaleString("ru-RU", { maximumFractionDigits: 2 })} кг`;
+  if (grams >= 1000)
+    return `${(grams / 1000).toLocaleString("ru-RU", { maximumFractionDigits: 2 })} кг`;
   return `${formatNumber(grams)} г`;
 }
 

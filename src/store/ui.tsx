@@ -1,11 +1,4 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useMemo,
-  useState,
-  type ReactNode,
-} from "react";
+import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
 
 type UIContextValue = {
   cartOpen: boolean;
@@ -45,7 +38,17 @@ export function UIProvider({ children }: { children: ReactNode }) {
       openMenu,
       closeMenu,
     }),
-    [cartOpen, searchOpen, menuOpen, openCart, closeCart, openSearch, closeSearch, openMenu, closeMenu],
+    [
+      cartOpen,
+      searchOpen,
+      menuOpen,
+      openCart,
+      closeCart,
+      openSearch,
+      closeSearch,
+      openMenu,
+      closeMenu,
+    ],
   );
 
   return <UIContext.Provider value={value}>{children}</UIContext.Provider>;

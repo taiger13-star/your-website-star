@@ -136,13 +136,13 @@ function IndexPage() {
       </section>
 
       {/* COLLECTIONS */}
-      <section className="border-t border-hairline bg-surface">
+      <section id="collections" className="scroll-mt-20 border-t border-hairline bg-surface">
         <div className="container-page py-16 md:py-24">
           <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
             <div>
               <p className="label-caps text-taupe">Коллекции</p>
               <h2 className="display-md mt-4 text-foreground">
-                Шесть языков формы — от чистой геометрии до автополива
+                Форма с характером для каждого пространства
               </h2>
             </div>
             <Link

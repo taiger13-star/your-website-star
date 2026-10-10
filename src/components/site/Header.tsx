@@ -58,6 +58,7 @@ export function Header() {
               <Link
                 key={item.to}
                 to={item.to}
+                {...(item.hash ? { hash: item.hash, activeOptions: { includeHash: true } } : {})}
                 className="label-caps text-ink-soft transition-colors duration-300 hover:text-foreground"
                 activeProps={{ className: "text-foreground" }}
               >

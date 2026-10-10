@@ -15,6 +15,7 @@ import { Route as BusinessRouteImport } from './routes/business'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as CatalogRouteImport } from './routes/catalog'
 import { Route as CheckoutRouteImport } from './routes/checkout'
+import { Route as CollectionsRouteImport } from './routes/collections'
 import { Route as ConfiguratorRouteImport } from './routes/configurator'
 import { Route as SmartRouteImport } from './routes/smart'
 import { Route as WishlistRouteImport } from './routes/wishlist'
@@ -51,6 +52,11 @@ const CheckoutRoute = CheckoutRouteImport.update({
   path: '/checkout',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CollectionsRoute = CollectionsRouteImport.update({
+  id: '/collections',
+  path: '/collections',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ConfiguratorRoute = ConfiguratorRouteImport.update({
   id: '/configurator',
   path: '/configurator',
@@ -84,6 +90,7 @@ export interface FileRoutesByFullPath {
   '/cart': typeof CartRoute
   '/catalog': typeof CatalogRoute
   '/checkout': typeof CheckoutRoute
+  '/collections': typeof CollectionsRoute
   '/configurator': typeof ConfiguratorRoute
   '/smart': typeof SmartRoute
   '/wishlist': typeof WishlistRoute
@@ -97,6 +104,7 @@ export interface FileRoutesByTo {
   '/cart': typeof CartRoute
   '/catalog': typeof CatalogRoute
   '/checkout': typeof CheckoutRoute
+  '/collections': typeof CollectionsRoute
   '/configurator': typeof ConfiguratorRoute
   '/smart': typeof SmartRoute
   '/wishlist': typeof WishlistRoute
@@ -111,6 +119,7 @@ export interface FileRoutesById {
   '/cart': typeof CartRoute
   '/catalog': typeof CatalogRoute
   '/checkout': typeof CheckoutRoute
+  '/collections': typeof CollectionsRoute
   '/configurator': typeof ConfiguratorRoute
   '/smart': typeof SmartRoute
   '/wishlist': typeof WishlistRoute
@@ -126,6 +135,7 @@ export interface FileRouteTypes {
     | '/cart'
     | '/catalog'
     | '/checkout'
+    | '/collections'
     | '/configurator'
     | '/smart'
     | '/wishlist'
@@ -139,6 +149,7 @@ export interface FileRouteTypes {
     | '/cart'
     | '/catalog'
     | '/checkout'
+    | '/collections'
     | '/configurator'
     | '/smart'
     | '/wishlist'
@@ -152,6 +163,7 @@ export interface FileRouteTypes {
     | '/cart'
     | '/catalog'
     | '/checkout'
+    | '/collections'
     | '/configurator'
     | '/smart'
     | '/wishlist'
@@ -166,6 +178,7 @@ export interface RootRouteChildren {
   CartRoute: typeof CartRoute
   CatalogRoute: typeof CatalogRoute
   CheckoutRoute: typeof CheckoutRoute
+  CollectionsRoute: typeof CollectionsRoute
   ConfiguratorRoute: typeof ConfiguratorRoute
   SmartRoute: typeof SmartRoute
   WishlistRoute: typeof WishlistRoute
@@ -217,6 +230,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CheckoutRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/collections': {
+      id: '/collections'
+      path: '/collections'
+      fullPath: '/collections'
+      preLoaderRoute: typeof CollectionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/configurator': {
       id: '/configurator'
       path: '/configurator'
@@ -262,6 +282,7 @@ const rootRouteChildren: RootRouteChildren = {
   CartRoute: CartRoute,
   CatalogRoute: CatalogRoute,
   CheckoutRoute: CheckoutRoute,
+  CollectionsRoute: CollectionsRoute,
   ConfiguratorRoute: ConfiguratorRoute,
   SmartRoute: SmartRoute,
   WishlistRoute: WishlistRoute,

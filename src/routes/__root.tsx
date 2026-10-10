@@ -53,8 +53,9 @@ function NotFoundComponent() {
       >
         {NAV_LINKS.map((item) => (
           <Link
-            key={item.to}
+            key={`${item.to}-${item.hash ?? ""}`}
             to={item.to}
+            {...(item.hash ? { hash: item.hash } : {})}
             className="label-caps text-taupe transition-colors hover:text-ink"
           >
             {item.label}

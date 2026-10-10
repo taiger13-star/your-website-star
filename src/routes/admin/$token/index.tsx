@@ -168,6 +168,10 @@ function Products({ data, refresh }: { data: any; refresh: () => void }) {
                   price: 0,
                   productionDays: 7,
                   enabled: true,
+                  packageLengthCm: null,
+                  packageWidthCm: null,
+                  packageHeightCm: null,
+                  packageWeightGrams: null,
                   measurements: { outerHeightMm: 160, scaleReference: "plant" },
                 },
               ],
@@ -461,6 +465,10 @@ function VariantEditor({
                 price: 0,
                 productionDays: 7,
                 enabled: true,
+                packageLengthCm: null,
+                packageWidthCm: null,
+                packageHeightCm: null,
+                packageWeightGrams: null,
                 measurements: { outerHeightMm: null, scaleReference: "plant" },
               },
             ])
@@ -574,6 +582,34 @@ function VariantEditor({
                   <option value="none">Не показывать</option>
                 </select>
               </label>
+            </div>
+            <div className="mt-4 border-t border-hairline pt-4">
+              <p className="text-xs text-taupe">Упаковка для расчёта СДЭК</p>
+              <div className="mt-2 grid gap-3 sm:grid-cols-4">
+                {(
+                  [
+                    ["packageLengthCm", "Длина, см"],
+                    ["packageWidthCm", "Ширина, см"],
+                    ["packageHeightCm", "Высота, см"],
+                    ["packageWeightGrams", "Вес, г"],
+                  ] as const
+                ).map(([field, label]) => (
+                  <label key={field} className="text-xs">
+                    {label}
+                    <input
+                      type="number"
+                      min="1"
+                      value={variant[field] ?? ""}
+                      onChange={(event) =>
+                        update(index, {
+                          [field]: event.target.value === "" ? null : Number(event.target.value),
+                        })
+                      }
+                      className="mt-1 w-full border border-hairline bg-background p-2 text-sm"
+                    />
+                  </label>
+                ))}
+              </div>
             </div>
           </article>
         ))}
@@ -1017,8 +1053,15 @@ function Orders({ data, refresh }: { data: any; refresh: () => void }) {
                 ))}
               </ul>
               <p className="mt-3 text-sm text-muted-foreground">
-                {order.deliveryMethod}
+                {order.deliveryMethod === "cdek_pvz" ? "СДЭК · пункт выдачи" : "СДЭК · курьер"}
+                {order.cdekPointAddress ? ` · ${order.cdekPointAddress}` : ""}
                 {order.deliveryAddress ? ` · ${order.deliveryAddress}` : ""}
+                {order.deliveryCost !== null && order.deliveryCost !== undefined
+                  ? ` · ${order.deliveryCost} ${order.deliveryCurrency ?? "RUB"}`
+                  : ""}
+                {order.deliveryPeriodMin !== null || order.deliveryPeriodMax !== null
+                  ? ` · ${order.deliveryPeriodMin ?? order.deliveryPeriodMax}–${order.deliveryPeriodMax ?? order.deliveryPeriodMin} дн.`
+                  : ""}
                 {order.comment ? ` · ${order.comment}` : ""}
               </p>
             </article>
