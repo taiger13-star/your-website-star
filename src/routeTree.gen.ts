@@ -17,7 +17,10 @@ import { Route as CatalogRouteImport } from './routes/catalog'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CollectionsRouteImport } from './routes/collections'
 import { Route as ConfiguratorRouteImport } from './routes/configurator'
+import { Route as DataRouteImport } from './routes/data'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as SmartRouteImport } from './routes/smart'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as WishlistRouteImport } from './routes/wishlist'
 import { Route as ProductSlugRouteImport } from './routes/product/$slug'
 import { Route as AdminTokenIndexRouteImport } from './routes/admin/$token/index'
@@ -62,9 +65,24 @@ const ConfiguratorRoute = ConfiguratorRouteImport.update({
   path: '/configurator',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DataRoute = DataRouteImport.update({
+  id: '/data',
+  path: '/data',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SmartRoute = SmartRouteImport.update({
   id: '/smart',
   path: '/smart',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
 const WishlistRoute = WishlistRouteImport.update({
@@ -92,7 +110,10 @@ export interface FileRoutesByFullPath {
   '/checkout': typeof CheckoutRoute
   '/collections': typeof CollectionsRoute
   '/configurator': typeof ConfiguratorRoute
+  '/data': typeof DataRoute
+  '/privacy': typeof PrivacyRoute
   '/smart': typeof SmartRoute
+  '/terms': typeof TermsRoute
   '/wishlist': typeof WishlistRoute
   '/product/$slug': typeof ProductSlugRoute
   '/admin/$token/': typeof AdminTokenIndexRoute
@@ -106,7 +127,10 @@ export interface FileRoutesByTo {
   '/checkout': typeof CheckoutRoute
   '/collections': typeof CollectionsRoute
   '/configurator': typeof ConfiguratorRoute
+  '/data': typeof DataRoute
+  '/privacy': typeof PrivacyRoute
   '/smart': typeof SmartRoute
+  '/terms': typeof TermsRoute
   '/wishlist': typeof WishlistRoute
   '/product/$slug': typeof ProductSlugRoute
   '/admin/$token': typeof AdminTokenIndexRoute
@@ -121,7 +145,10 @@ export interface FileRoutesById {
   '/checkout': typeof CheckoutRoute
   '/collections': typeof CollectionsRoute
   '/configurator': typeof ConfiguratorRoute
+  '/data': typeof DataRoute
+  '/privacy': typeof PrivacyRoute
   '/smart': typeof SmartRoute
+  '/terms': typeof TermsRoute
   '/wishlist': typeof WishlistRoute
   '/product/$slug': typeof ProductSlugRoute
   '/admin/$token/': typeof AdminTokenIndexRoute
@@ -137,7 +164,10 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/collections'
     | '/configurator'
+    | '/data'
+    | '/privacy'
     | '/smart'
+    | '/terms'
     | '/wishlist'
     | '/product/$slug'
     | '/admin/$token/'
@@ -151,7 +181,10 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/collections'
     | '/configurator'
+    | '/data'
+    | '/privacy'
     | '/smart'
+    | '/terms'
     | '/wishlist'
     | '/product/$slug'
     | '/admin/$token'
@@ -165,7 +198,10 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/collections'
     | '/configurator'
+    | '/data'
+    | '/privacy'
     | '/smart'
+    | '/terms'
     | '/wishlist'
     | '/product/$slug'
     | '/admin/$token/'
@@ -180,7 +216,10 @@ export interface RootRouteChildren {
   CheckoutRoute: typeof CheckoutRoute
   CollectionsRoute: typeof CollectionsRoute
   ConfiguratorRoute: typeof ConfiguratorRoute
+  DataRoute: typeof DataRoute
+  PrivacyRoute: typeof PrivacyRoute
   SmartRoute: typeof SmartRoute
+  TermsRoute: typeof TermsRoute
   WishlistRoute: typeof WishlistRoute
   ProductSlugRoute: typeof ProductSlugRoute
   AdminTokenIndexRoute: typeof AdminTokenIndexRoute
@@ -244,11 +283,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ConfiguratorRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/data': {
+      id: '/data'
+      path: '/data'
+      fullPath: '/data'
+      preLoaderRoute: typeof DataRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/smart': {
       id: '/smart'
       path: '/smart'
       fullPath: '/smart'
       preLoaderRoute: typeof SmartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/wishlist': {
@@ -284,7 +344,10 @@ const rootRouteChildren: RootRouteChildren = {
   CheckoutRoute: CheckoutRoute,
   CollectionsRoute: CollectionsRoute,
   ConfiguratorRoute: ConfiguratorRoute,
+  DataRoute: DataRoute,
+  PrivacyRoute: PrivacyRoute,
   SmartRoute: SmartRoute,
+  TermsRoute: TermsRoute,
   WishlistRoute: WishlistRoute,
   ProductSlugRoute: ProductSlugRoute,
   AdminTokenIndexRoute: AdminTokenIndexRoute,
