@@ -1,5 +1,5 @@
 import { useState, type FormEvent, type InputHTMLAttributes } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Check } from "lucide-react";
 import { toast } from "sonner";
 
@@ -147,6 +147,23 @@ function BusinessPage() {
                     className="mt-2 w-full resize-y border border-sand/30 bg-transparent px-4 py-3 text-sm text-sand outline-none placeholder:text-sand/45 focus:border-sand"
                   />
                 </label>
+                <div className="sm:col-span-2 flex items-start gap-3 text-xs leading-relaxed text-sand/75">
+                  <input
+                    id="personal-data-consent"
+                    type="checkbox"
+                    name="personalDataConsent"
+                    required
+                    className="mt-0.5 h-4 w-4 shrink-0 accent-sand"
+                  />
+                  <div>
+                    <label htmlFor="personal-data-consent">
+                      Я даю согласие на обработку персональных данных для ответа на заявку.
+                    </label>{" "}
+                    <Link to="/data" className="underline underline-offset-2 hover:text-sand">
+                      Прочитать согласие
+                    </Link>
+                  </div>
+                </div>
                 <div className="sm:col-span-2 flex flex-wrap items-center gap-5 pt-2">
                   <button
                     type="submit"
@@ -155,9 +172,12 @@ function BusinessPage() {
                   >
                     {pending ? "Отправляем…" : "Обсудить проект"}
                   </button>
-                  <p className="max-w-sm text-xs leading-relaxed text-sand/60">
-                    Нажимая кнопку, вы соглашаетесь на обработку данных для ответа на запрос.
-                  </p>
+                  <Link
+                    to="/privacy"
+                    className="max-w-sm text-xs leading-relaxed text-sand/60 underline underline-offset-2 hover:text-sand"
+                  >
+                    Политика обработки персональных данных
+                  </Link>
                 </div>
               </form>
             )}

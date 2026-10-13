@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 
-import { BRAND, CONTACT, FOOTER_SECTIONS, PLACEHOLDER_NOTE } from "@/lib/brand";
+import { BRAND, CONTACT, FOOTER_SECTIONS } from "@/lib/brand";
 
 export function Footer() {
   const year = new Date().getFullYear();
@@ -17,9 +17,16 @@ export function Footer() {
             <p className="label-caps mt-4 text-taupe">{BRAND.values}</p>
             <p className="prose-noir mt-6 text-sm">{BRAND.heroLine}</p>
             <div className="mt-8 space-y-1 text-sm text-ink-soft">
-              <p>{CONTACT.phone}</p>
-              <p>{CONTACT.email}</p>
-              <p>{CONTACT.telegram}</p>
+              <p>
+                <a href="tel:+79127137774" className="hover:text-foreground">
+                  {CONTACT.phone}
+                </a>
+              </p>
+              <p>
+                <a href={`mailto:${CONTACT.email}`} className="hover:text-foreground">
+                  {CONTACT.email}
+                </a>
+              </p>
             </div>
           </div>
 
@@ -49,7 +56,9 @@ export function Footer() {
           <p>
             © {year} {BRAND.name}. {BRAND.production}. {BRAND.country}.
           </p>
-          <p className="max-w-md md:text-right">{PLACEHOLDER_NOTE}</p>
+          <p className="max-w-md md:text-right">
+            {CONTACT.seller} · ИНН {CONTACT.inn} · ОГРНИП {CONTACT.ogrnip}
+          </p>
         </div>
       </div>
     </footer>

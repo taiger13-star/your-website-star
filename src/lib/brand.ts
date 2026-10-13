@@ -1,8 +1,7 @@
 /**
  * NOIR ATELIER — бренд, навигация и контент-константы.
  *
- * Значения CONTACT и юридических блоков — placeholders.
- * Их нужно заменить перед запуском продаж: ничего не выдумываем.
+ * Публичные контакты и данные продавца.
  */
 
 export const BRAND = {
@@ -13,7 +12,7 @@ export const BRAND = {
   heroLine:
     "Дизайнерские кашпо и предметы интерьера, созданные с помощью технологий нового поколения.",
   country: "Россия",
-  production: "Изделия производятся под заказ",
+  production: "Готовые изделия и индивидуальные проекты",
 } as const;
 
 /**
@@ -29,18 +28,13 @@ export type Testimonial = {
 
 export const TESTIMONIALS: Testimonial[] = [];
 
-/** Данные ниже — легко заменяемые placeholders. Не реальные реквизиты. */
 export const CONTACT = {
-  phone: "+7 (___) ___-__-__",
-  email: "your@email.ru",
-  telegram: "@noir_atelier",
-  workHours: "Пн–Пт, 10:00–19:00 (замените на реальные часы)",
-  pickupAddress: "Адрес самовывоза будет опубликован (замените)",
-  inn: "ИНН / ОГРН — будут добавлены до запуска продаж",
+  phone: "+7 (912) 713-77-74",
+  email: "noir-atelier@mail.ru",
+  seller: "ИП Койков Алексей Анатольевич",
+  inn: "434540593105",
+  ogrnip: "324430000014349",
 } as const;
-
-export const PLACEHOLDER_NOTE =
-  "Контакты и реквизиты — временные. Замените их перед запуском продаж.";
 
 export type NavItem = { label: string; to: string; hash?: string };
 
@@ -75,8 +69,8 @@ export const FOOTER_SECTIONS: { title: string; links: NavItem[] }[] = [
   {
     title: "Правовая информация",
     links: [
-      { label: "Политика конфиденциальности", to: "/privacy" },
-      { label: "Обработка персональных данных", to: "/data" },
+      { label: "Политика обработки персональных данных", to: "/privacy" },
+      { label: "Согласие на обработку персональных данных", to: "/data" },
       { label: "Пользовательское соглашение", to: "/terms" },
     ],
   },
