@@ -1,11 +1,14 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment, @typescript-eslint/no-explicit-any */
 // @ts-nocheck
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute, notFound, useRouter } from "@tanstack/react-router";
 import { toast } from "sonner";
+import { getAdminUsersFn } from "@/lib/account-functions";
+import { paymentStatusLabel } from "@/lib/order-payment";
 
 import {
   deleteCollectionFn,
+  confirmDeliveryReceiptFn,
   deleteMediaFn,
   deleteProductFn,
   deleteReferenceFn,
@@ -16,6 +19,7 @@ import {
   saveProductFn,
   saveReferenceFn,
   updateOrderStatusFn,
+  updateOrderDeliveryFn,
   uploadMediaFn,
 } from "@/lib/server-functions";
 
@@ -34,7 +38,7 @@ export const Route = createFileRoute("/admin/$token/")({
   component: AdminPage,
 });
 
-type Tab = "products" | "collections" | "references" | "media" | "orders";
+type Tab = "products" | "collections" | "references" | "media" | "orders" | "users";
 
 function AdminPage() {
   const state = Route.useLoaderData();
@@ -74,6 +78,7 @@ function AdminPage() {
               ["references", "Параметры"],
               ["media", "Фото"],
               ["orders", "Заказы"],
+              ["users", "Пользователи"],
             ] as [Tab, string][]
           ).map(([id, label]) => (
             <button
@@ -91,6 +96,7 @@ function AdminPage() {
         {tab === "references" ? <References data={data} refresh={refresh} /> : null}
         {tab === "media" ? <Media data={data} refresh={refresh} /> : null}
         {tab === "orders" ? <Orders data={data} refresh={refresh} /> : null}
+        {tab === "users" ? <Users /> : null}
       </main>
     </div>
   );
@@ -1002,6 +1008,134 @@ function Media({ data, refresh }: { data: any; refresh: () => void }) {
   );
 }
 
+function Users() {
+  const [input, setInput] = useState("");
+  const [query, setQuery] = useState("");
+  const [page, setPage] = useState(1);
+  const [result, setResult] = useState<Awaited<ReturnType<typeof getAdminUsersFn>> | null>(null);
+  const [error, setError] = useState("");
+  useEffect(() => {
+    let active = true;
+    setResult(null);
+    setError("");
+    void getAdminUsersFn({ data: { query, page } })
+      .then((value) => {
+        if (active) setResult(value);
+      })
+      .catch((reason) => {
+        if (active)
+          setError(
+            reason instanceof Error ? reason.message : "Не удалось загрузить пользователей.",
+          );
+      });
+    return () => {
+      active = false;
+    };
+  }, [query, page]);
+  return (
+    <section className="py-8">
+      <p className="label-caps text-taupe">Аккаунты</p>
+      <h2 className="display-md mt-2">Пользователи</h2>
+      <form
+        className="mt-7 flex max-w-xl gap-2"
+        onSubmit={(event) => {
+          event.preventDefault();
+          setPage(1);
+          setQuery(input);
+        }}
+      >
+        <input
+          value={input}
+          onChange={(event) => setInput(event.target.value)}
+          placeholder="Имя или почта"
+          maxLength={100}
+          className="min-w-0 flex-1 border border-hairline bg-background px-3 py-2"
+        />
+        <button className="bg-ink px-4 py-2 text-xs uppercase text-primary-foreground">
+          Найти
+        </button>
+      </form>
+      {error ? (
+        <p role="alert" className="mt-5 text-sm">
+          {error}
+        </p>
+      ) : null}
+      {!result && !error ? <p className="mt-5 text-sm">Загружаем пользователей…</p> : null}
+      {result ? (
+        <>
+          <p className="mt-5 text-sm text-taupe">Найдено: {result.total}</p>
+          <div className="mt-4 overflow-x-auto border border-hairline bg-background">
+            <table className="w-full min-w-[760px] text-left text-sm">
+              <thead className="border-b border-hairline text-xs uppercase text-taupe">
+                <tr>
+                  <th className="p-3">Пользователь</th>
+                  <th className="p-3">Почта</th>
+                  <th className="p-3">Пол</th>
+                  <th className="p-3">Регистрация</th>
+                  <th className="p-3">Статус</th>
+                  <th className="p-3">Заказы</th>
+                </tr>
+              </thead>
+              <tbody>
+                {result.rows.map((user) => (
+                  <tr key={user.id} className="border-b border-hairline last:border-0">
+                    <td className="p-3">
+                      <span className="flex items-center gap-2">
+                        {user.avatarUrl ? (
+                          <img
+                            src={user.avatarUrl}
+                            alt=""
+                            className="h-8 w-8 rounded-full object-cover"
+                          />
+                        ) : null}
+                        {user.name}
+                      </span>
+                    </td>
+                    <td className="p-3">{user.email}</td>
+                    <td className="p-3">
+                      {user.gender === "male"
+                        ? "Мужской"
+                        : user.gender === "female"
+                          ? "Женский"
+                          : "Не указан"}
+                    </td>
+                    <td className="p-3">{new Date(user.createdAt).toLocaleDateString("ru-RU")}</td>
+                    <td className="p-3">
+                      {user.emailVerifiedAt ? "Подтверждён" : "Ожидает подтверждения"}
+                    </td>
+                    <td className="p-3">{user.orderCount}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="mt-5 flex items-center gap-4 text-sm">
+            <button
+              type="button"
+              disabled={page === 1}
+              onClick={() => setPage(page - 1)}
+              className="underline disabled:opacity-30"
+            >
+              Назад
+            </button>
+            <span>
+              Страница {page} из {Math.max(1, Math.ceil(result.total / result.pageSize))}
+            </span>
+            <button
+              type="button"
+              disabled={page * result.pageSize >= result.total}
+              onClick={() => setPage(page + 1)}
+              className="underline disabled:opacity-30"
+            >
+              Далее
+            </button>
+          </div>
+        </>
+      ) : null}
+    </section>
+  );
+}
+
 function Orders({ data, refresh }: { data: any; refresh: () => void }) {
   const changeStatus = async (id: string, status: string) => {
     try {
@@ -1009,6 +1143,26 @@ function Orders({ data, refresh }: { data: any; refresh: () => void }) {
       refresh();
     } catch {
       toast.error("Статус не обновлён");
+    }
+  };
+  const saveTracking = async (event: React.FormEvent<HTMLFormElement>, id: string) => {
+    event.preventDefault();
+    const trackingNumber = String(new FormData(event.currentTarget).get("trackingNumber") ?? "");
+    try {
+      await updateOrderDeliveryFn({ data: { id, trackingNumber } });
+      toast.success("Номер отправления сохранён");
+      refresh();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Не удалось сохранить номер.");
+    }
+  };
+  const confirmReceipt = async (id: string) => {
+    try {
+      await confirmDeliveryReceiptFn({ data: { id } });
+      toast.success("Оплата доставки подтверждена");
+      refresh();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Не удалось подтвердить оплату.");
     }
   };
   return (
@@ -1047,8 +1201,23 @@ function Orders({ data, refresh }: { data: any; refresh: () => void }) {
               <ul className="mt-4 border-t border-hairline pt-3 text-sm">
                 {order.items.map((item: any) => (
                   <li key={item.id}>
-                    {item.productName} · {item.sizeCode} · {item.system} · {item.quantity} шт. ·{" "}
-                    {item.unitPrice} ₽
+                    {item.productName} · {item.sku} · {item.sizeCode} · {item.system} ·{" "}
+                    {item.colorName} · {item.quantity} шт. · {item.unitPrice} ₽
+                    {item.snapshot?.package &&
+                    [
+                      item.snapshot.package.lengthCm,
+                      item.snapshot.package.widthCm,
+                      item.snapshot.package.heightCm,
+                      item.snapshot.package.weightGrams,
+                    ].every((value) => typeof value === "number" && value > 0) ? (
+                      <span className="text-muted-foreground">
+                        {" "}
+                        · упаковка {item.snapshot.package.lengthCm}×{item.snapshot.package.widthCm}×
+                        {item.snapshot.package.heightCm} см, {item.snapshot.package.weightGrams} г
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground"> · упаковка не задана</span>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -1064,6 +1233,72 @@ function Orders({ data, refresh }: { data: any; refresh: () => void }) {
                   : ""}
                 {order.comment ? ` · ${order.comment}` : ""}
               </p>
+              <div className="mt-4 border-t border-hairline pt-4 text-sm">
+                <p>
+                  Товары: {order.total} ₽ ·{" "}
+                  {paymentStatusLabel(
+                    order.payments.find((payment: any) => payment.component === "product")?.status,
+                  )}
+                </p>
+                <p className="mt-1">
+                  Доставка: {order.deliveryCost ?? "—"} ₽ ·{" "}
+                  {order.deliveryPaymentMode === "on_receipt"
+                    ? "при получении"
+                    : order.deliveryPaymentMode === "prepaid"
+                      ? "вместе с товаром"
+                      : "старый заказ"}{" "}
+                  ·{" "}
+                  {paymentStatusLabel(
+                    order.payments.find((payment: any) => payment.component === "delivery")?.status,
+                  )}
+                </p>
+                <p className="mt-1">
+                  Итого: {order.grandTotal ?? order.total + (order.deliveryCost ?? 0)} ₽ · к оплате
+                  при оформлении: {order.payNowTotal ?? "—"} ₽
+                </p>
+                <p className="mt-1">
+                  Город: {order.deliveryCityName ?? order.cdekCityCode ?? "—"} · тариф:{" "}
+                  {order.cdekTariffName ?? "—"} ({order.cdekTariffCode ?? "—"})
+                  {order.cdekPointCode ? ` · код ПВЗ: ${order.cdekPointCode}` : ""}
+                </p>
+                {order.deliveryPaymentMode === "on_receipt" ? (
+                  <p className="mt-2 font-medium">
+                    При ручном оформлении в СДЭК укажите сбор за доставку с получателя:{" "}
+                    {order.deliveryCost} ₽, если он доступен по вашему договору. Не включайте
+                    стоимость товара в наложенный платёж. Оплата товара здесь только тестовая.
+                  </p>
+                ) : null}
+                {order.deliveryQuoteIsTest ? (
+                  <p className="mt-1">Расчёт доставки тестовый: проверьте тариф перед отправкой.</p>
+                ) : null}
+              </div>
+              <form
+                onSubmit={(event) => void saveTracking(event, order.id)}
+                className="mt-4 flex flex-wrap items-end gap-2"
+              >
+                <label className="text-sm">
+                  Номер отправления СДЭК
+                  <input
+                    name="trackingNumber"
+                    defaultValue={order.cdekTrackingNumber ?? ""}
+                    maxLength={120}
+                    className="mt-1 block border border-hairline bg-background px-3 py-2"
+                  />
+                </label>
+                <button type="submit" className="border border-ink px-4 py-2 text-xs uppercase">
+                  Сохранить
+                </button>
+              </form>
+              {order.payments.find((payment: any) => payment.component === "delivery")?.status ===
+              "awaiting_receipt" ? (
+                <button
+                  type="button"
+                  onClick={() => void confirmReceipt(order.id)}
+                  className="mt-3 border border-ink px-4 py-2 text-xs uppercase"
+                >
+                  Подтвердить получение оплаты доставки
+                </button>
+              ) : null}
             </article>
           ))
         ) : (

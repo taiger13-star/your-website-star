@@ -1,10 +1,11 @@
 import { Link } from "@tanstack/react-router";
-import { Heart, Menu, Search, ShoppingBag } from "lucide-react";
+import { Heart, Menu, Search, ShoppingBag, UserRound } from "lucide-react";
 
 import { BRAND, NAV_LINKS } from "@/lib/brand";
 import { useCart } from "@/store/cart";
 import { useShopUI } from "@/store/ui";
 import { useWishlist } from "@/store/wishlist";
+import { useAccount } from "@/store/account";
 import { MobileMenu } from "./MobileMenu";
 
 function IconButton({
@@ -38,6 +39,7 @@ function IconButton({
 export function Header() {
   const { count, hydrated } = useCart();
   const wishlist = useWishlist();
+  const account = useAccount();
   const { openCart, openSearch, openMenu } = useShopUI();
 
   const badge = hydrated ? count : 0;
@@ -86,6 +88,13 @@ export function Header() {
             <IconButton label="Корзина" onClick={openCart} badge={badge}>
               <ShoppingBag className="h-[18px] w-[18px]" strokeWidth={1.25} />
             </IconButton>
+            <Link
+              to={account.user ? "/account" : "/login"}
+              aria-label={account.user ? "Личный кабинет" : "Войти"}
+              className="flex h-10 w-10 items-center justify-center text-ink-soft transition-colors hover:text-foreground"
+            >
+              <UserRound className="h-[18px] w-[18px]" strokeWidth={1.25} />
+            </Link>
             <button
               type="button"
               onClick={openMenu}

@@ -62,7 +62,6 @@ export const FOOTER_SECTIONS: { title: string; links: NavItem[] }[] = [
     links: [
       { label: "Доставка и получение", to: "/delivery" },
       { label: "Возврат", to: "/returns" },
-      { label: "Вопросы и ответы", to: "/faq" },
       { label: "Контакты", to: "/contacts" },
     ],
   },

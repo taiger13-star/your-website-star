@@ -5,6 +5,7 @@ import { calculateCdekDelivery } from "./cdek-service";
 import {
   colors,
   orderItems,
+  orderPayments,
   orders,
   productColors,
   products,
@@ -23,12 +24,20 @@ export type CheckoutItem = {
 };
 
 export async function createOrder(input: {
+  userId: string;
+  checkoutKey: string;
   customerName: string;
   phone: string;
   email?: string;
+  deliveryPaymentMode: "prepaid" | "on_receipt";
+  expectedSubtotal: number;
+  expectedDeliveryCost: number;
+  expectedTariffCode: number;
+  expectedCurrency: string;
   delivery: {
     method: "cdek_pvz" | "cdek_courier";
     cityCode: number;
+    cityName: string;
     pickupPointCode?: string;
     deliveryAddress?: string;
   };
@@ -36,6 +45,12 @@ export async function createOrder(input: {
   items: CheckoutItem[];
 }) {
   const db = getDb();
+  const [existing] = await db
+    .select({ id: orders.id, number: orders.number })
+    .from(orders)
+    .where(and(eq(orders.userId, input.userId), eq(orders.checkoutKey, input.checkoutKey)))
+    .limit(1);
+  if (existing) return { kind: "created" as const, order: existing };
   if (!input.items.length) throw new Error("Корзина пуста.");
   const delivery = await calculateCdekDelivery({
     ...input.delivery,
@@ -120,14 +135,37 @@ export async function createOrder(input: {
     }),
   );
   const total = snapshots.reduce((sum, item) => sum + item.variant.price * item.quantity, 0);
+  if (
+    input.expectedSubtotal !== total ||
+    input.expectedDeliveryCost !== delivery.cost ||
+    input.expectedTariffCode !== delivery.tariffCode ||
+    input.expectedCurrency !== delivery.currency
+  ) {
+    return {
+      kind: "changed" as const,
+      subtotal: total,
+      delivery,
+      itemPrices: snapshots.map((item) => ({
+        productId: item.product.id,
+        variantId: item.variant.id,
+        colorId: item.color.id,
+        unitPrice: item.variant.price,
+      })),
+    };
+  }
+  if (delivery.currency !== "RUB") throw new Error("Для оплаты заказа требуется расчёт в рублях.");
   return db.transaction(async (tx) => {
     const [order] = await tx
       .insert(orders)
       .values({
+        userId: input.userId,
+        checkoutKey: input.checkoutKey,
         customerName: input.customerName.trim(),
         phone: input.phone.trim(),
         email: input.email?.trim() || null,
         deliveryMethod: delivery.method,
+        deliveryPaymentMode: input.deliveryPaymentMode,
+        deliveryCityName: input.delivery.cityName.trim(),
         deliveryAddress: input.delivery.deliveryAddress?.trim() || null,
         cdekCityCode: input.delivery.cityCode,
         cdekPointCode: delivery.pickupPoint?.code ?? null,
@@ -139,10 +177,23 @@ export async function createOrder(input: {
         deliveryPeriodMin: delivery.periodMin,
         deliveryPeriodMax: delivery.periodMax,
         deliveryCalculatedAt: new Date(),
+        deliveryQuoteIsTest: delivery.isTest,
         comment: input.comment?.trim() || null,
         total,
+        grandTotal: total + delivery.cost,
+        payNowTotal: total + (input.deliveryPaymentMode === "prepaid" ? delivery.cost : 0),
       })
+      .onConflictDoNothing({ target: [orders.userId, orders.checkoutKey] })
       .returning({ id: orders.id, number: orders.number });
+    if (!order) {
+      const [winner] = await tx
+        .select({ id: orders.id, number: orders.number })
+        .from(orders)
+        .where(and(eq(orders.userId, input.userId), eq(orders.checkoutKey, input.checkoutKey)))
+        .limit(1);
+      if (!winner) throw new Error("Не удалось восстановить заказ. Повторите попытку.");
+      return { kind: "created" as const, order: winner };
+    }
     await tx.insert(orderItems).values(
       snapshots.map((item) => ({
         orderId: order!.id,
@@ -161,9 +212,64 @@ export async function createOrder(input: {
           color: item.color,
           measurements: item.measurements,
           specifications: item.specifications,
+          package: {
+            lengthCm: item.variant.packageLengthCm,
+            widthCm: item.variant.packageWidthCm,
+            heightCm: item.variant.packageHeightCm,
+            weightGrams: item.variant.packageWeightGrams,
+          },
         },
       })),
     );
-    return order!;
+    await tx.insert(orderPayments).values([
+      {
+        orderId: order.id,
+        component: "product",
+        amount: total,
+        currency: delivery.currency,
+        status: "pending",
+        provider: "mock",
+      },
+      {
+        orderId: order.id,
+        component: "delivery",
+        amount: delivery.cost,
+        currency: delivery.currency,
+        status: input.deliveryPaymentMode === "prepaid" ? "pending" : "awaiting_receipt",
+        provider: input.deliveryPaymentMode === "prepaid" ? "mock" : "cdek_manual",
+      },
+    ]);
+    return { kind: "created" as const, order };
   });
+}
+
+export async function mockPayOrder(userId: string, orderId: string) {
+  const db = getDb();
+  const [order] = await db
+    .select({ id: orders.id, status: orders.status })
+    .from(orders)
+    .where(and(eq(orders.id, orderId), eq(orders.userId, userId)))
+    .limit(1);
+  if (!order) throw new Error("Заказ не найден.");
+  if (order.status === "cancelled") throw new Error("Отменённый заказ оплатить нельзя.");
+  await db
+    .update(orderPayments)
+    .set({ status: "mock_paid", paidAt: new Date(), updatedAt: new Date() })
+    .where(and(eq(orderPayments.orderId, orderId), eq(orderPayments.status, "pending")));
+  return getOrderDetails(userId, orderId);
+}
+
+export async function getOrderDetails(userId: string, orderId: string) {
+  const db = getDb();
+  const [order] = await db
+    .select()
+    .from(orders)
+    .where(and(eq(orders.id, orderId), eq(orders.userId, userId)))
+    .limit(1);
+  if (!order) throw new Error("Заказ не найден.");
+  const [items, payments] = await Promise.all([
+    db.select().from(orderItems).where(eq(orderItems.orderId, orderId)),
+    db.select().from(orderPayments).where(eq(orderPayments.orderId, orderId)),
+  ]);
+  return { ...order, items: items.map(({ snapshot: _snapshot, ...item }) => item), payments };
 }

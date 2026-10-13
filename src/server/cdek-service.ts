@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm";
 
 import { getDb } from "./db";
-import { productVariants } from "./schema";
+import { productVariantMeasurements, productVariants } from "./schema";
 
 const API_URL = "https://api.cdek.ru/v2";
 const ORIGIN_CITY_CODE = Number(process.env["CDEK_ORIGIN_CITY_CODE"] ?? "44");
@@ -238,22 +238,45 @@ async function packagesFor(items: CheckoutItem[]): Promise<Package[]> {
         width: productVariants.packageWidthCm,
         height: productVariants.packageHeightCm,
         weight: productVariants.packageWeightGrams,
+        outerWidthMm: productVariantMeasurements.outerWidthMm,
+        outerDepthMm: productVariantMeasurements.outerDepthMm,
+        outerDiameterMm: productVariantMeasurements.outerDiameterMm,
+        outerHeightMm: productVariantMeasurements.outerHeightMm,
+        productWeightGrams: productVariantMeasurements.weightGrams,
       })
       .from(productVariants)
+      .leftJoin(
+        productVariantMeasurements,
+        eq(productVariantMeasurements.variantId, productVariants.id),
+      )
       .where(
         and(eq(productVariants.id, item.variantId), eq(productVariants.productId, item.productId)),
       )
       .limit(1);
     if (!variant?.enabled) throw new Error("Один из товаров больше недоступен для заказа.");
-    if (!variant.length || !variant.width || !variant.height || !variant.weight)
+    const hasPackage = [variant.length, variant.width, variant.height, variant.weight].every(
+      (value) => typeof value === "number" && value > 0,
+    );
+    if (!hasPackage && !usesMockCdek())
       throw new Error("Для одного из товаров ещё не задана упаковка для расчёта доставки.");
+    // Only the test tariff may estimate a parcel from product measurements.
+    // Real CDEK quotes require the actual packed dimensions and weight above.
+    const estimateCm = (millimeters: number | null) =>
+      millimeters && millimeters > 0 ? Math.ceil(millimeters / 10) + 4 : 20;
+    const fallbackWidthMm = variant.outerWidthMm ?? variant.outerDiameterMm;
+    const fallbackDepthMm = variant.outerDepthMm ?? variant.outerDiameterMm;
+    const parcel = {
+      length: variant.length && variant.length > 0 ? variant.length : estimateCm(fallbackWidthMm),
+      width: variant.width && variant.width > 0 ? variant.width : estimateCm(fallbackDepthMm),
+      height:
+        variant.height && variant.height > 0 ? variant.height : estimateCm(variant.outerHeightMm),
+      weight:
+        variant.weight && variant.weight > 0
+          ? variant.weight
+          : Math.max(500, (variant.productWeightGrams ?? 700) + 300),
+    };
     for (let count = 0; count < item.quantity; count += 1) {
-      packages.push({
-        length: variant.length,
-        width: variant.width,
-        height: variant.height,
-        weight: variant.weight,
-      });
+      packages.push(parcel);
     }
   }
   return packages;

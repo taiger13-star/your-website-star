@@ -29,6 +29,34 @@
       "when": 1791663899638,
       "tag": "0003_stormy_hulk",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1791797564313,
+      "tag": "0004_lean_sway",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1791798033763,
+      "tag": "0005_mysterious_toad_men",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791807764258,
+      "tag": "0006_furry_garia",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1791883248398,
+      "tag": "0007_simple_living_mummy",
+      "breakpoints": true
     }
   ]
 }

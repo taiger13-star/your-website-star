@@ -3,6 +3,7 @@ import {
   boolean,
   integer,
   jsonb,
+  index,
   pgEnum,
   pgTable,
   primaryKey,
@@ -26,6 +27,65 @@ export const orderStatus = pgEnum("order_status", [
   "completed",
   "cancelled",
 ]);
+export const deliveryPaymentMode = pgEnum("delivery_payment_mode", ["prepaid", "on_receipt"]);
+export const orderPaymentComponent = pgEnum("order_payment_component", ["product", "delivery"]);
+export const orderPaymentStatus = pgEnum("order_payment_status", [
+  "pending",
+  "mock_paid",
+  "awaiting_receipt",
+  "paid",
+]);
+export const userGender = pgEnum("user_gender", ["male", "female"]);
+
+export const users = pgTable(
+  "users",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    name: varchar("name", { length: 160 }).notNull(),
+    gender: userGender("gender"),
+    email: varchar("email", { length: 254 }).notNull(),
+    passwordHash: text("password_hash").notNull(),
+    emailVerifiedAt: timestamp("email_verified_at", { withTimezone: true }),
+    avatarObjectKey: varchar("avatar_object_key", { length: 500 }),
+    avatarUrl: text("avatar_url"),
+    createdAt,
+    updatedAt,
+  },
+  (table) => [uniqueIndex("users_email_unique").on(table.email)],
+);
+
+export const userTokens = pgTable(
+  "user_tokens",
+  {
+    tokenHash: varchar("token_hash", { length: 64 }).primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    purpose: varchar("purpose", { length: 24 }).notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    createdAt,
+  },
+  (table) => [index("user_tokens_user_purpose_idx").on(table.userId, table.purpose)],
+);
+
+export const userSessions = pgTable(
+  "user_sessions",
+  {
+    tokenHash: varchar("token_hash", { length: 64 }).primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    createdAt,
+  },
+  (table) => [index("user_sessions_user_idx").on(table.userId)],
+);
+
+export const authRateLimits = pgTable("auth_rate_limits", {
+  key: varchar("key", { length: 64 }).primaryKey(),
+  attempts: integer("attempts").notNull(),
+  windowStartedAt: timestamp("window_started_at", { withTimezone: true }).notNull(),
+});
 
 export const mediaAssets = pgTable(
   "media_assets",
@@ -241,30 +301,81 @@ export const productImages = pgTable(
   (table) => [primaryKey({ columns: [table.productId, table.mediaId] })],
 );
 
-export const orders = pgTable("orders", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  number: integer("number").generatedAlwaysAsIdentity().notNull(),
-  status: orderStatus("status").notNull().default("new"),
-  customerName: varchar("customer_name", { length: 160 }).notNull(),
-  phone: varchar("phone", { length: 60 }).notNull(),
-  email: varchar("email", { length: 254 }),
-  deliveryMethod: varchar("delivery_method", { length: 120 }).notNull(),
-  deliveryAddress: text("delivery_address"),
-  cdekCityCode: integer("cdek_city_code"),
-  cdekPointCode: varchar("cdek_point_code", { length: 120 }),
-  cdekPointAddress: text("cdek_point_address"),
-  cdekTariffCode: integer("cdek_tariff_code"),
-  cdekTariffName: varchar("cdek_tariff_name", { length: 200 }),
-  deliveryCost: integer("delivery_cost"),
-  deliveryCurrency: varchar("delivery_currency", { length: 8 }),
-  deliveryPeriodMin: integer("delivery_period_min"),
-  deliveryPeriodMax: integer("delivery_period_max"),
-  deliveryCalculatedAt: timestamp("delivery_calculated_at", { withTimezone: true }),
-  comment: text("comment"),
-  total: integer("total").notNull(),
-  createdAt,
-  updatedAt,
-});
+export const userWishlist = pgTable(
+  "user_wishlist",
+  {
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    productId: uuid("product_id")
+      .notNull()
+      .references(() => products.id, { onDelete: "cascade" }),
+    createdAt,
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.productId] })],
+);
+
+export const orders = pgTable(
+  "orders",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id").references(() => users.id, { onDelete: "set null" }),
+    checkoutKey: uuid("checkout_key"),
+    number: integer("number").generatedAlwaysAsIdentity().notNull(),
+    status: orderStatus("status").notNull().default("new"),
+    customerName: varchar("customer_name", { length: 160 }).notNull(),
+    phone: varchar("phone", { length: 60 }).notNull(),
+    email: varchar("email", { length: 254 }),
+    deliveryMethod: varchar("delivery_method", { length: 120 }).notNull(),
+    deliveryPaymentMode: deliveryPaymentMode("delivery_payment_mode"),
+    deliveryCityName: varchar("delivery_city_name", { length: 160 }),
+    deliveryAddress: text("delivery_address"),
+    cdekCityCode: integer("cdek_city_code"),
+    cdekPointCode: varchar("cdek_point_code", { length: 120 }),
+    cdekPointAddress: text("cdek_point_address"),
+    cdekTariffCode: integer("cdek_tariff_code"),
+    cdekTariffName: varchar("cdek_tariff_name", { length: 200 }),
+    deliveryCost: integer("delivery_cost"),
+    deliveryCurrency: varchar("delivery_currency", { length: 8 }),
+    deliveryPeriodMin: integer("delivery_period_min"),
+    deliveryPeriodMax: integer("delivery_period_max"),
+    deliveryCalculatedAt: timestamp("delivery_calculated_at", { withTimezone: true }),
+    deliveryQuoteIsTest: boolean("delivery_quote_is_test"),
+    cdekTrackingNumber: varchar("cdek_tracking_number", { length: 120 }),
+    comment: text("comment"),
+    total: integer("total").notNull(),
+    grandTotal: integer("grand_total"),
+    payNowTotal: integer("pay_now_total"),
+    createdAt,
+    updatedAt,
+  },
+  (table) => [
+    index("orders_user_idx").on(table.userId),
+    uniqueIndex("orders_user_checkout_key_unique").on(table.userId, table.checkoutKey),
+  ],
+);
+
+export const orderPayments = pgTable(
+  "order_payments",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    orderId: uuid("order_id")
+      .notNull()
+      .references(() => orders.id, { onDelete: "cascade" }),
+    component: orderPaymentComponent("component").notNull(),
+    amount: integer("amount").notNull(),
+    currency: varchar("currency", { length: 8 }).notNull().default("RUB"),
+    status: orderPaymentStatus("status").notNull(),
+    provider: varchar("provider", { length: 40 }),
+    externalReference: varchar("external_reference", { length: 160 }),
+    paidAt: timestamp("paid_at", { withTimezone: true }),
+    createdAt,
+    updatedAt,
+  },
+  (table) => [
+    uniqueIndex("order_payments_order_component_unique").on(table.orderId, table.component),
+  ],
+);
 
 export const projectInquiries = pgTable("project_inquiries", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -273,6 +384,8 @@ export const projectInquiries = pgTable("project_inquiries", {
   phone: varchar("phone", { length: 60 }).notNull(),
   email: varchar("email", { length: 254 }).notNull(),
   projectDetails: text("project_details").notNull(),
+  personalDataConsentAt: timestamp("personal_data_consent_at", { withTimezone: true }),
+  personalDataConsentText: text("personal_data_consent_text"),
   createdAt,
 });
 

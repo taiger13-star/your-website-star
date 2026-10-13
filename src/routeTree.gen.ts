@@ -11,17 +11,27 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutRouteImport } from './routes/about'
+import { Route as AccountRouteImport } from './routes/account'
 import { Route as BusinessRouteImport } from './routes/business'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as CatalogRouteImport } from './routes/catalog'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CollectionsRouteImport } from './routes/collections'
 import { Route as ConfiguratorRouteImport } from './routes/configurator'
+import { Route as ContactsRouteImport } from './routes/contacts'
 import { Route as DataRouteImport } from './routes/data'
+import { Route as DeliveryRouteImport } from './routes/delivery'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as RegisterRouteImport } from './routes/register'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as ReturnsRouteImport } from './routes/returns'
 import { Route as SmartRouteImport } from './routes/smart'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as VerifyEmailRouteImport } from './routes/verify-email'
 import { Route as WishlistRouteImport } from './routes/wishlist'
+import { Route as OrderOrderIdRouteImport } from './routes/order/$orderId'
 import { Route as ProductSlugRouteImport } from './routes/product/$slug'
 import { Route as AdminTokenIndexRouteImport } from './routes/admin/$token/index'
 
@@ -33,6 +43,11 @@ const IndexRoute = IndexRouteImport.update({
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccountRoute = AccountRouteImport.update({
+  id: '/account',
+  path: '/account',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BusinessRoute = BusinessRouteImport.update({
@@ -65,14 +80,49 @@ const ConfiguratorRoute = ConfiguratorRouteImport.update({
   path: '/configurator',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ContactsRoute = ContactsRouteImport.update({
+  id: '/contacts',
+  path: '/contacts',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DataRoute = DataRouteImport.update({
   id: '/data',
   path: '/data',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DeliveryRoute = DeliveryRouteImport.update({
+  id: '/delivery',
+  path: '/delivery',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegisterRoute = RegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReturnsRoute = ReturnsRouteImport.update({
+  id: '/returns',
+  path: '/returns',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SmartRoute = SmartRouteImport.update({
@@ -85,9 +135,19 @@ const TermsRoute = TermsRouteImport.update({
   path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
+const VerifyEmailRoute = VerifyEmailRouteImport.update({
+  id: '/verify-email',
+  path: '/verify-email',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const WishlistRoute = WishlistRouteImport.update({
   id: '/wishlist',
   path: '/wishlist',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OrderOrderIdRoute = OrderOrderIdRouteImport.update({
+  id: '/order/$orderId',
+  path: '/order/$orderId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProductSlugRoute = ProductSlugRouteImport.update({
@@ -104,34 +164,54 @@ const AdminTokenIndexRoute = AdminTokenIndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/account': typeof AccountRoute
   '/business': typeof BusinessRoute
   '/cart': typeof CartRoute
   '/catalog': typeof CatalogRoute
   '/checkout': typeof CheckoutRoute
   '/collections': typeof CollectionsRoute
   '/configurator': typeof ConfiguratorRoute
+  '/contacts': typeof ContactsRoute
   '/data': typeof DataRoute
+  '/delivery': typeof DeliveryRoute
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
+  '/register': typeof RegisterRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/returns': typeof ReturnsRoute
   '/smart': typeof SmartRoute
   '/terms': typeof TermsRoute
+  '/verify-email': typeof VerifyEmailRoute
   '/wishlist': typeof WishlistRoute
+  '/order/$orderId': typeof OrderOrderIdRoute
   '/product/$slug': typeof ProductSlugRoute
   '/admin/$token/': typeof AdminTokenIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/account': typeof AccountRoute
   '/business': typeof BusinessRoute
   '/cart': typeof CartRoute
   '/catalog': typeof CatalogRoute
   '/checkout': typeof CheckoutRoute
   '/collections': typeof CollectionsRoute
   '/configurator': typeof ConfiguratorRoute
+  '/contacts': typeof ContactsRoute
   '/data': typeof DataRoute
+  '/delivery': typeof DeliveryRoute
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
+  '/register': typeof RegisterRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/returns': typeof ReturnsRoute
   '/smart': typeof SmartRoute
   '/terms': typeof TermsRoute
+  '/verify-email': typeof VerifyEmailRoute
   '/wishlist': typeof WishlistRoute
+  '/order/$orderId': typeof OrderOrderIdRoute
   '/product/$slug': typeof ProductSlugRoute
   '/admin/$token': typeof AdminTokenIndexRoute
 }
@@ -139,17 +219,27 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/account': typeof AccountRoute
   '/business': typeof BusinessRoute
   '/cart': typeof CartRoute
   '/catalog': typeof CatalogRoute
   '/checkout': typeof CheckoutRoute
   '/collections': typeof CollectionsRoute
   '/configurator': typeof ConfiguratorRoute
+  '/contacts': typeof ContactsRoute
   '/data': typeof DataRoute
+  '/delivery': typeof DeliveryRoute
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
+  '/register': typeof RegisterRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/returns': typeof ReturnsRoute
   '/smart': typeof SmartRoute
   '/terms': typeof TermsRoute
+  '/verify-email': typeof VerifyEmailRoute
   '/wishlist': typeof WishlistRoute
+  '/order/$orderId': typeof OrderOrderIdRoute
   '/product/$slug': typeof ProductSlugRoute
   '/admin/$token/': typeof AdminTokenIndexRoute
 }
@@ -158,51 +248,81 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/about'
+    | '/account'
     | '/business'
     | '/cart'
     | '/catalog'
     | '/checkout'
     | '/collections'
     | '/configurator'
+    | '/contacts'
     | '/data'
+    | '/delivery'
+    | '/forgot-password'
+    | '/login'
     | '/privacy'
+    | '/register'
+    | '/reset-password'
+    | '/returns'
     | '/smart'
     | '/terms'
+    | '/verify-email'
     | '/wishlist'
+    | '/order/$orderId'
     | '/product/$slug'
     | '/admin/$token/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/about'
+    | '/account'
     | '/business'
     | '/cart'
     | '/catalog'
     | '/checkout'
     | '/collections'
     | '/configurator'
+    | '/contacts'
     | '/data'
+    | '/delivery'
+    | '/forgot-password'
+    | '/login'
     | '/privacy'
+    | '/register'
+    | '/reset-password'
+    | '/returns'
     | '/smart'
     | '/terms'
+    | '/verify-email'
     | '/wishlist'
+    | '/order/$orderId'
     | '/product/$slug'
     | '/admin/$token'
   id:
     | '__root__'
     | '/'
     | '/about'
+    | '/account'
     | '/business'
     | '/cart'
     | '/catalog'
     | '/checkout'
     | '/collections'
     | '/configurator'
+    | '/contacts'
     | '/data'
+    | '/delivery'
+    | '/forgot-password'
+    | '/login'
     | '/privacy'
+    | '/register'
+    | '/reset-password'
+    | '/returns'
     | '/smart'
     | '/terms'
+    | '/verify-email'
     | '/wishlist'
+    | '/order/$orderId'
     | '/product/$slug'
     | '/admin/$token/'
   fileRoutesById: FileRoutesById
@@ -210,17 +330,27 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
+  AccountRoute: typeof AccountRoute
   BusinessRoute: typeof BusinessRoute
   CartRoute: typeof CartRoute
   CatalogRoute: typeof CatalogRoute
   CheckoutRoute: typeof CheckoutRoute
   CollectionsRoute: typeof CollectionsRoute
   ConfiguratorRoute: typeof ConfiguratorRoute
+  ContactsRoute: typeof ContactsRoute
   DataRoute: typeof DataRoute
+  DeliveryRoute: typeof DeliveryRoute
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
+  LoginRoute: typeof LoginRoute
   PrivacyRoute: typeof PrivacyRoute
+  RegisterRoute: typeof RegisterRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
+  ReturnsRoute: typeof ReturnsRoute
   SmartRoute: typeof SmartRoute
   TermsRoute: typeof TermsRoute
+  VerifyEmailRoute: typeof VerifyEmailRoute
   WishlistRoute: typeof WishlistRoute
+  OrderOrderIdRoute: typeof OrderOrderIdRoute
   ProductSlugRoute: typeof ProductSlugRoute
   AdminTokenIndexRoute: typeof AdminTokenIndexRoute
 }
@@ -239,6 +369,13 @@ declare module '@tanstack/react-router' {
       path: '/about'
       fullPath: '/about'
       preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account': {
+      id: '/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AccountRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/business': {
@@ -283,6 +420,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ConfiguratorRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/contacts': {
+      id: '/contacts'
+      path: '/contacts'
+      fullPath: '/contacts'
+      preLoaderRoute: typeof ContactsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/data': {
       id: '/data'
       path: '/data'
@@ -290,11 +434,53 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DataRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/delivery': {
+      id: '/delivery'
+      path: '/delivery'
+      fullPath: '/delivery'
+      preLoaderRoute: typeof DeliveryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/privacy': {
       id: '/privacy'
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/returns': {
+      id: '/returns'
+      path: '/returns'
+      fullPath: '/returns'
+      preLoaderRoute: typeof ReturnsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/smart': {
@@ -311,11 +497,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/verify-email': {
+      id: '/verify-email'
+      path: '/verify-email'
+      fullPath: '/verify-email'
+      preLoaderRoute: typeof VerifyEmailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/wishlist': {
       id: '/wishlist'
       path: '/wishlist'
       fullPath: '/wishlist'
       preLoaderRoute: typeof WishlistRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/order/$orderId': {
+      id: '/order/$orderId'
+      path: '/order/$orderId'
+      fullPath: '/order/$orderId'
+      preLoaderRoute: typeof OrderOrderIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/product/$slug': {
@@ -338,17 +538,27 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
+  AccountRoute: AccountRoute,
   BusinessRoute: BusinessRoute,
   CartRoute: CartRoute,
   CatalogRoute: CatalogRoute,
   CheckoutRoute: CheckoutRoute,
   CollectionsRoute: CollectionsRoute,
   ConfiguratorRoute: ConfiguratorRoute,
+  ContactsRoute: ContactsRoute,
   DataRoute: DataRoute,
+  DeliveryRoute: DeliveryRoute,
+  ForgotPasswordRoute: ForgotPasswordRoute,
+  LoginRoute: LoginRoute,
   PrivacyRoute: PrivacyRoute,
+  RegisterRoute: RegisterRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
+  ReturnsRoute: ReturnsRoute,
   SmartRoute: SmartRoute,
   TermsRoute: TermsRoute,
+  VerifyEmailRoute: VerifyEmailRoute,
   WishlistRoute: WishlistRoute,
+  OrderOrderIdRoute: OrderOrderIdRoute,
   ProductSlugRoute: ProductSlugRoute,
   AdminTokenIndexRoute: AdminTokenIndexRoute,
 }

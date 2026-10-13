@@ -1,29 +1,46 @@
 import { useEffect, useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 
 import { CdekPickupMap } from "@/components/delivery/CdekPickupMap";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { getCurrentUserFn } from "@/lib/account-functions";
 import {
   calculateCdekDeliveryFn,
   createOrderFn,
   findCdekCitiesFn,
   findCdekPickupPointsFn,
+  mockPayOrderFn,
 } from "@/lib/server-functions";
 import { formatPrice } from "@/lib/format";
 import type { CdekCity, CdekDeliveryQuote, CdekPickupPoint } from "@/server/cdek-service";
 import { useCatalog } from "@/store/catalog";
 import { useCart } from "@/store/cart";
 
-export const Route = createFileRoute("/checkout")({ component: CheckoutPage });
+export const Route = createFileRoute("/checkout")({
+  loader: async () => {
+    const user = await getCurrentUserFn();
+    if (!user) throw redirect({ to: "/login", search: { next: "/checkout" } });
+    return user;
+  },
+  component: CheckoutPage,
+});
 
 type DeliveryMethod = "cdek_pvz" | "cdek_courier";
 
 function CheckoutPage() {
-  const { items, subtotal, clear } = useCart();
+  const { items, clear } = useCart();
+  const user = Route.useLoaderData();
+  const navigate = useNavigate();
   const { productById } = useCatalog();
   const [pending, setPending] = useState(false);
-  const [done, setDone] = useState<number | null>(null);
+  const [checkoutKey, setCheckoutKey] = useState(() => crypto.randomUUID());
+  const [createdOrderId, setCreatedOrderId] = useState<string | null>(null);
+  const [serverPrices, setServerPrices] = useState<Record<string, number>>({});
+  const [needsReconfirm, setNeedsReconfirm] = useState(false);
+  const [deliveryPaymentMode, setDeliveryPaymentMode] = useState<"prepaid" | "on_receipt">(
+    "prepaid",
+  );
   const [method, setMethod] = useState<DeliveryMethod>("cdek_pvz");
   const [cityQuery, setCityQuery] = useState("");
   const [cities, setCities] = useState<CdekCity[]>([]);
@@ -49,12 +66,25 @@ function CheckoutPage() {
 
   useEffect(() => {
     setQuote(null);
+    setServerPrices({});
+    setCheckoutKey(crypto.randomUUID());
   }, [cartSignature]);
+  useEffect(() => {
+    const pendingOrder = sessionStorage.getItem("noir-pending-checkout-order");
+    if (pendingOrder) void navigate({ to: "/order/$orderId", params: { orderId: pendingOrder } });
+  }, [navigate]);
+
+  const itemPrice = (item: (typeof items)[number]) =>
+    serverPrices[`${item.productId}:${item.variantId}:${item.bodyColor}`] ?? item.unitPrice;
+  const displayedSubtotal = items.reduce((sum, item) => sum + itemPrice(item) * item.qty, 0);
+  const payNow = displayedSubtotal + (deliveryPaymentMode === "prepaid" ? (quote?.cost ?? 0) : 0);
+  const payOnReceipt = deliveryPaymentMode === "on_receipt" ? (quote?.cost ?? 0) : 0;
 
   const clearDeliverySelection = () => {
     setPickupPoint(null);
     setPoints([]);
     setQuote(null);
+    setCheckoutKey(crypto.randomUUID());
   };
 
   const selectCity = (nextCity: CdekCity) => {
@@ -145,6 +175,7 @@ function CheckoutPage() {
   const choosePickupPoint = (point: CdekPickupPoint) => {
     setPickupPoint(point);
     setQuote(null);
+    setCheckoutKey(crypto.randomUUID());
     setMapOpen(false);
     void calculate("cdek_pvz", point);
   };
@@ -153,6 +184,7 @@ function CheckoutPage() {
     setMethod(nextMethod);
     setQuote(null);
     setPickupPoint(null);
+    setCheckoutKey(crypto.randomUUID());
   };
 
   const submit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -175,15 +207,29 @@ function CheckoutPage() {
       return;
     }
     setPending(true);
+    let savedOrderId = createdOrderId;
     try {
-      const order = await createOrderFn({
+      if (createdOrderId) {
+        await mockPayOrderFn({ data: { orderId: createdOrderId } });
+        clear();
+        await navigate({ to: "/order/$orderId", params: { orderId: createdOrderId } });
+        return;
+      }
+      const result = await createOrderFn({
         data: {
+          checkoutKey,
           customerName: String(form.get("name") ?? ""),
           phone: String(form.get("phone") ?? ""),
           email: String(form.get("email") ?? ""),
+          deliveryPaymentMode,
+          expectedSubtotal: displayedSubtotal,
+          expectedDeliveryCost: quote.cost,
+          expectedTariffCode: quote.tariffCode,
+          expectedCurrency: quote.currency,
           delivery: {
             method,
             cityCode: city.code,
+            cityName: city.name,
             pickupPointCode: pickupPoint?.code,
             deliveryAddress: method === "cdek_courier" ? courierAddress.trim() : undefined,
           },
@@ -196,32 +242,42 @@ function CheckoutPage() {
           })),
         },
       });
+      if (result.kind === "changed") {
+        setQuote(result.delivery);
+        setServerPrices(
+          Object.fromEntries(
+            result.itemPrices.map((item) => [
+              `${item.productId}:${item.variantId}:${item.colorId}`,
+              item.unitPrice,
+            ]),
+          ),
+        );
+        setNeedsReconfirm(true);
+        toast.error("Сумма заказа изменилась. Проверьте расчёт и нажмите «Оплатить» ещё раз.");
+        return;
+      }
+      const order = result.order;
+      savedOrderId = order.id;
+      setCreatedOrderId(order.id);
+      sessionStorage.setItem("noir-pending-checkout-order", order.id);
+      sessionStorage.setItem("noir-pending-checkout-cart", cartSignature);
+      await mockPayOrderFn({ data: { orderId: order.id } });
+      sessionStorage.removeItem("noir-pending-checkout-order");
+      sessionStorage.removeItem("noir-pending-checkout-cart");
       clear();
-      setDone(order.number);
-      toast.success("Заявка отправлена");
+      await navigate({ to: "/order/$orderId", params: { orderId: order.id } });
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Не удалось оформить заказ");
+      toast.error(
+        error instanceof Error ? error.message : "Не удалось оформить заказ. Повторите попытку.",
+      );
+      if (savedOrderId) {
+        await navigate({ to: "/order/$orderId", params: { orderId: savedOrderId } });
+      }
     } finally {
       setPending(false);
     }
   };
 
-  if (done)
-    return (
-      <div className="container-page py-24 text-center">
-        <p className="label-caps text-taupe">Заявка принята</p>
-        <h1 className="display-lg mt-4">Заказ №{done}</h1>
-        <p className="prose-noir mx-auto mt-5">
-          Мы свяжемся с вами для подтверждения деталей и доставки.
-        </p>
-        <Link
-          to="/catalog"
-          className="mt-8 inline-block bg-ink px-7 py-4 text-xs uppercase tracking-[0.16em] text-primary-foreground"
-        >
-          Продолжить покупки
-        </Link>
-      </div>
-    );
   if (!items.length)
     return (
       <div className="container-page py-24 text-center">
@@ -231,16 +287,16 @@ function CheckoutPage() {
         </Link>
       </div>
     );
-  const total = subtotal + (quote?.cost ?? 0);
+  const total = displayedSubtotal + (quote?.cost ?? 0);
   return (
     <div className="container-page py-10 md:py-14">
       <p className="label-caps text-taupe">Оформление</p>
       <h1 className="display-lg mt-4">Доставка СДЭК</h1>
-      <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_22rem]">
-        <form onSubmit={submit} className="grid gap-5">
-          <Input label="Имя" name="name" required />
+      <div className="mt-10 max-w-3xl">
+        <form id="checkout-form" onSubmit={submit} className="grid gap-5">
+          <Input label="Имя" name="name" defaultValue={user.name} required />
           <Input label="Телефон" name="phone" required type="tel" />
-          <Input label="Email" name="email" type="email" />
+          <Input label="Email" name="email" defaultValue={user.email} type="email" />
           <fieldset className="border-y border-hairline py-5">
             <legend className="text-sm">Способ доставки</legend>
             <div className="mt-3 grid gap-2 sm:grid-cols-2">
@@ -341,6 +397,7 @@ function CheckoutPage() {
                     onChange={(event) => {
                       setCourierAddress(event.target.value);
                       setQuote(null);
+                      setCheckoutKey(crypto.randomUUID());
                     }}
                     placeholder="Улица, дом, квартира или офис"
                     className="mt-2 min-h-24 w-full border border-hairline bg-background p-3"
@@ -372,6 +429,29 @@ function CheckoutPage() {
               </div>
             ) : null}
           </fieldset>
+          <fieldset className="border-b border-hairline pb-5">
+            <legend className="text-sm">Оплата доставки</legend>
+            <div className="mt-3 grid gap-2 sm:grid-cols-2">
+              <DeliveryMethodButton
+                active={deliveryPaymentMode === "prepaid"}
+                onClick={() => {
+                  setDeliveryPaymentMode("prepaid");
+                  setCheckoutKey(crypto.randomUUID());
+                }}
+                title="Сейчас вместе с товаром"
+                note="Товар и доставка в одном тестовом платеже"
+              />
+              <DeliveryMethodButton
+                active={deliveryPaymentMode === "on_receipt"}
+                onClick={() => {
+                  setDeliveryPaymentMode("on_receipt");
+                  setCheckoutKey(crypto.randomUUID());
+                }}
+                title="При получении"
+                note="Сейчас оплачивается только товар"
+              />
+            </div>
+          </fieldset>
           <label className="text-sm">
             Комментарий
             <textarea
@@ -379,15 +459,9 @@ function CheckoutPage() {
               className="mt-2 min-h-24 w-full border border-hairline bg-background p-3"
             />
           </label>
-          <button
-            disabled={pending || !quote}
-            className="bg-ink px-7 py-4 text-xs uppercase tracking-[0.16em] text-primary-foreground disabled:opacity-50"
-          >
-            {pending ? "Отправляем…" : "Отправить заявку"}
-          </button>
         </form>
-        <aside className="h-fit border border-hairline p-6">
-          <p className="label-caps text-taupe">Ваш заказ</p>
+        <aside className="mt-8 border border-hairline p-6" aria-label="Расчёт заказа">
+          <p className="label-caps text-taupe">Расчёт заказа</p>
           <ul className="mt-4 divide-y divide-hairline">
             {items.map((item) => {
               const product = productById(item.productId);
@@ -399,14 +473,14 @@ function CheckoutPage() {
                   <p className="mt-1 text-muted-foreground">
                     {item.size} · {item.system === "smart" ? "NOIR SMART" : "Standard"}
                   </p>
-                  <p className="mt-1">{formatPrice(item.unitPrice * item.qty)}</p>
+                  <p className="mt-1">{formatPrice(itemPrice(item) * item.qty)}</p>
                 </li>
               );
             })}
           </ul>
           <div className="mt-4 flex justify-between border-t border-hairline pt-4">
             <span>Товары</span>
-            <strong>{formatPrice(subtotal)}</strong>
+            <strong>{formatPrice(displayedSubtotal)}</strong>
           </div>
           <div className="mt-3 flex justify-between text-sm">
             <span>Доставка</span>
@@ -416,6 +490,45 @@ function CheckoutPage() {
             <span>Итого</span>
             <strong>{formatPrice(total)}</strong>
           </div>
+          <div className="mt-4 flex justify-between text-sm">
+            <span>
+              К оплате сейчас · товар{deliveryPaymentMode === "prepaid" ? " и доставка" : ""}
+            </span>
+            <strong>{formatPrice(payNow)}</strong>
+          </div>
+          <div className="mt-2 flex justify-between text-sm">
+            <span>Доставка при получении</span>
+            <strong>{formatPrice(payOnReceipt)}</strong>
+          </div>
+          <p className="mt-5 text-xs text-muted-foreground">
+            Оплата тестовая: деньги не списываются.
+          </p>
+          {needsReconfirm ? (
+            <p role="alert" className="mt-3 text-sm">
+              Сумма обновлена. Проверьте расчёт перед оплатой.
+            </p>
+          ) : null}
+          <button
+            type="submit"
+            form="checkout-form"
+            disabled={pending || !quote}
+            className="mt-5 bg-ink px-7 py-4 text-xs uppercase tracking-[0.16em] text-primary-foreground disabled:opacity-50"
+          >
+            {pending ? "Сохраняем…" : "Оплатить (тест)"}
+          </button>
+          {!quote ? (
+            <p className="mt-3 text-sm text-muted-foreground">
+              Для оплаты выберите город и способ получения, затем дождитесь расчёта доставки.
+            </p>
+          ) : null}
+          {createdOrderId ? (
+            <p className="mt-3 text-sm">
+              Заказ сохранён.{" "}
+              <Link to="/order/$orderId" params={{ orderId: createdOrderId }} className="underline">
+                Открыть заказ
+              </Link>
+            </p>
+          ) : null}
         </aside>
       </div>
       <Dialog open={mapOpen} onOpenChange={setMapOpen}>

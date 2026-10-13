@@ -1,4 +1,4 @@
-import { asc, desc, eq, inArray } from "drizzle-orm";
+import { and, asc, desc, eq, inArray } from "drizzle-orm";
 
 import { getDb } from "./db";
 import {
@@ -7,6 +7,7 @@ import {
   materials,
   mediaAssets,
   orderItems,
+  orderPayments,
   orders,
   productColors,
   productImages,
@@ -147,6 +148,9 @@ export async function getAdminSnapshot() {
   const items = orderIds.length
     ? await db.select().from(orderItems).where(inArray(orderItems.orderId, orderIds))
     : [];
+  const payments = orderIds.length
+    ? await db.select().from(orderPayments).where(inArray(orderPayments.orderId, orderIds))
+    : [];
   return {
     collections: collectionRows.map(({ collection, coverUrl }) => ({ ...collection, coverUrl })),
     products: productRows.map(({ product, collectionName }) => ({
@@ -192,6 +196,7 @@ export async function getAdminSnapshot() {
     orders: orderRows.map((order) => ({
       ...order,
       items: items.filter((item) => item.orderId === order.id),
+      payments: payments.filter((payment) => payment.orderId === order.id),
     })),
   };
 }
@@ -447,4 +452,38 @@ export async function updateOrderStatus(
   status: "new" | "in_progress" | "awaiting_customer" | "ready" | "completed" | "cancelled",
 ) {
   await getDb().update(orders).set({ status, updatedAt: new Date() }).where(eq(orders.id, id));
+}
+
+export async function updateOrderDelivery(id: string, trackingNumber: string) {
+  const [order] = await getDb()
+    .update(orders)
+    .set({ cdekTrackingNumber: trackingNumber.trim() || null, updatedAt: new Date() })
+    .where(eq(orders.id, id))
+    .returning({ id: orders.id });
+  if (!order) throw new Error("Заказ не найден.");
+  return order;
+}
+
+export async function confirmDeliveryReceipt(id: string) {
+  const db = getDb();
+  const [order] = await db
+    .select({ id: orders.id, mode: orders.deliveryPaymentMode })
+    .from(orders)
+    .where(eq(orders.id, id))
+    .limit(1);
+  if (!order || order.mode !== "on_receipt")
+    throw new Error("Для этого заказа нет оплаты доставки при получении.");
+  const [payment] = await db
+    .update(orderPayments)
+    .set({ status: "paid", paidAt: new Date(), updatedAt: new Date() })
+    .where(
+      and(
+        eq(orderPayments.orderId, id),
+        eq(orderPayments.component, "delivery"),
+        eq(orderPayments.status, "awaiting_receipt"),
+      ),
+    )
+    .returning({ id: orderPayments.id });
+  if (!payment) throw new Error("Оплата доставки уже подтверждена или не найдена.");
+  return payment;
 }

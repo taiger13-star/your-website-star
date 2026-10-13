@@ -92,12 +92,19 @@ export const getCatalogFn = createServerFn({ method: "GET" }).handler(async () =
 export const createOrderFn = createServerFn({ method: "POST" })
   .validator(
     z.object({
+      checkoutKey: z.string().uuid(),
       customerName: z.string().min(2).max(160),
       phone: z.string().min(5).max(60),
       email: z.string().email().optional().or(z.literal("")),
+      deliveryPaymentMode: z.enum(["prepaid", "on_receipt"]),
+      expectedSubtotal: z.number().int().nonnegative(),
+      expectedDeliveryCost: z.number().int().nonnegative(),
+      expectedTariffCode: z.number().int().positive(),
+      expectedCurrency: z.string().min(1).max(8),
       delivery: z.object({
         method: z.enum(["cdek_pvz", "cdek_courier"]),
         cityCode: z.number().int().positive(),
+        cityName: z.string().trim().min(1).max(160),
         pickupPointCode: z.string().trim().min(1).max(120).optional(),
         deliveryAddress: z.string().trim().min(5).max(1000).optional(),
       }),
@@ -116,7 +123,25 @@ export const createOrderFn = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const { createOrder } = await import("../server/order-service");
-    return createOrder(data);
+    const { requireUser } = await import("../server/user-auth");
+    const user = await requireUser();
+    return createOrder({ ...data, userId: user.id });
+  });
+
+export const mockPayOrderFn = createServerFn({ method: "POST" })
+  .validator(z.object({ orderId: z.string().uuid() }))
+  .handler(async ({ data }) => {
+    const { requireUser } = await import("../server/user-auth");
+    const { mockPayOrder } = await import("../server/order-service");
+    return mockPayOrder((await requireUser()).id, data.orderId);
+  });
+
+export const getOrderDetailsFn = createServerFn({ method: "GET" })
+  .validator(z.object({ orderId: z.string().uuid() }))
+  .handler(async ({ data }) => {
+    const { requireUser } = await import("../server/user-auth");
+    const { getOrderDetails } = await import("../server/order-service");
+    return getOrderDetails((await requireUser()).id, data.orderId);
   });
 
 const checkoutItemSchema = z.object({
@@ -162,6 +187,7 @@ export const createProjectInquiryFn = createServerFn({ method: "POST" })
       phone: z.string().trim().min(5).max(60),
       email: z.string().trim().email().max(254),
       projectDetails: z.string().trim().min(10).max(5000),
+      personalDataConsent: z.literal(true),
     }),
   )
   .handler(async ({ data }) => {
@@ -272,6 +298,22 @@ export const updateOrderStatusFn = createServerFn({ method: "POST" })
     requireAdmin();
     const { updateOrderStatus } = await import("../server/admin-service");
     return updateOrderStatus(data.id, data.status);
+  });
+export const updateOrderDeliveryFn = createServerFn({ method: "POST" })
+  .validator(z.object({ id: z.string().uuid(), trackingNumber: z.string().trim().max(120) }))
+  .handler(async ({ data }) => {
+    const { requireAdmin } = await import("../server/auth");
+    requireAdmin();
+    const { updateOrderDelivery } = await import("../server/admin-service");
+    return updateOrderDelivery(data.id, data.trackingNumber);
+  });
+export const confirmDeliveryReceiptFn = createServerFn({ method: "POST" })
+  .validator(z.object({ id: z.string().uuid() }))
+  .handler(async ({ data }) => {
+    const { requireAdmin } = await import("../server/auth");
+    requireAdmin();
+    const { confirmDeliveryReceipt } = await import("../server/admin-service");
+    return confirmDeliveryReceipt(data.id);
   });
 export const uploadMediaFn = createServerFn({ method: "POST" })
   .validator(z.custom<FormData>((value) => value instanceof FormData, "Expected form data"))

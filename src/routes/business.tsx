@@ -37,6 +37,10 @@ function BusinessPage() {
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
+    if (form.get("personalDataConsent") !== "on") {
+      toast.error("Необходимо согласие на обработку персональных данных.");
+      return;
+    }
     setPending(true);
     try {
       await createProjectInquiryFn({
@@ -46,6 +50,7 @@ function BusinessPage() {
           phone: String(form.get("phone") ?? ""),
           email: String(form.get("email") ?? ""),
           projectDetails: String(form.get("project") ?? ""),
+          personalDataConsent: true,
         },
       });
       setSubmitted(true);

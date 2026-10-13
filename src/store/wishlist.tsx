@@ -8,6 +8,9 @@ import {
   type ReactNode,
 } from "react";
 
+import { mergeWishlistFn, setWishlistItemFn } from "@/lib/account-functions";
+import { useAccount } from "./account";
+
 const WISHLIST_KEY = "noir-atelier.wishlist.v1";
 
 type WishlistContextValue = {
@@ -35,8 +38,11 @@ function readWishlist(): string[] {
 }
 
 export function WishlistProvider({ children }: { children: ReactNode }) {
+  const account = useAccount();
+  const userId = account.user?.id;
   const [ids, setIds] = useState<string[]>([]);
   const [hydrated, setHydrated] = useState(false);
+  const [idsOwner, setIdsOwner] = useState("guest");
 
   useEffect(() => {
     setIds(readWishlist());
@@ -44,23 +50,70 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (!hydrated) return;
+    if (!hydrated || !account.hydrated || account.user || idsOwner !== "guest") return;
     try {
       window.localStorage.setItem(WISHLIST_KEY, JSON.stringify(ids));
     } catch {
       // storage unavailable — wishlist stays in memory
     }
-  }, [ids, hydrated]);
+  }, [ids, hydrated, account.hydrated, account.user, idsOwner]);
 
-  const toggle = useCallback((id: string) => {
-    setIds((prev) => (prev.includes(id) ? prev.filter((v) => v !== id) : [id, ...prev]));
-  }, []);
+  useEffect(() => {
+    if (!hydrated || !account.hydrated) return;
+    if (!userId) {
+      setIds(readWishlist());
+      setIdsOwner("guest");
+      return;
+    }
+    let active = true;
+    mergeWishlistFn({ data: { ids: readWishlist().filter((id) => /^[0-9a-f-]{36}$/i.test(id)) } })
+      .then((serverIds) => {
+        if (!active) return;
+        setIds(serverIds);
+        setIdsOwner(userId);
+        window.localStorage.removeItem(WISHLIST_KEY);
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, [userId, account.hydrated, hydrated]);
 
-  const remove = useCallback((id: string) => {
-    setIds((prev) => prev.filter((v) => v !== id));
-  }, []);
+  const update = useCallback(
+    (id: string, saved: boolean) => {
+      setIds((prev) =>
+        saved ? (prev.includes(id) ? prev : [id, ...prev]) : prev.filter((item) => item !== id),
+      );
+      if (account.user)
+        void setWishlistItemFn({ data: { productId: id, saved } }).catch(() => {
+          setIds((prev) => (saved ? prev.filter((item) => item !== id) : [id, ...prev]));
+        });
+    },
+    [account.user],
+  );
 
-  const clear = useCallback(() => setIds([]), []);
+  const toggle = useCallback(
+    (id: string) => {
+      update(id, !ids.includes(id));
+    },
+    [ids, update],
+  );
+
+  const remove = useCallback(
+    (id: string) => {
+      update(id, false);
+    },
+    [update],
+  );
+
+  const clear = useCallback(() => {
+    const oldIds = ids;
+    setIds([]);
+    if (account.user)
+      void Promise.all(
+        oldIds.map((id) => setWishlistItemFn({ data: { productId: id, saved: false } })),
+      );
+  }, [account.user, ids]);
 
   const value = useMemo<WishlistContextValue>(
     () => ({

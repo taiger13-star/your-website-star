@@ -22,6 +22,7 @@ import { CartProvider } from "../store/cart";
 import { WishlistProvider } from "../store/wishlist";
 import { UIProvider } from "../store/ui";
 import { CatalogProvider } from "../store/catalog";
+import { AccountProvider } from "../store/account";
 import { getCatalogFn } from "../lib/server-functions";
 
 function NotFoundComponent() {
@@ -169,24 +170,26 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <UIProvider>
         <CatalogProvider data={catalog}>
-          <CartProvider>
-            <WishlistProvider>
-              <a
-                href="#main"
-                className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:bg-ink focus:px-4 focus:py-2 focus:text-primary-foreground"
-              >
-                Перейти к содержимому
-              </a>
-              {!isAdminRoute ? <Header /> : null}
-              <main id="main">
-                <Outlet />
-              </main>
-              <Footer />
-              <CartDrawer />
-              <SearchOverlay />
-              <Toaster position="bottom-center" richColors={false} closeButton />
-            </WishlistProvider>
-          </CartProvider>
+          <AccountProvider>
+            <CartProvider>
+              <WishlistProvider>
+                <a
+                  href="#main"
+                  className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:bg-ink focus:px-4 focus:py-2 focus:text-primary-foreground"
+                >
+                  Перейти к содержимому
+                </a>
+                {!isAdminRoute ? <Header /> : null}
+                <main id="main">
+                  <Outlet />
+                </main>
+                <Footer />
+                <CartDrawer />
+                <SearchOverlay />
+                <Toaster position="bottom-center" richColors={false} closeButton />
+              </WishlistProvider>
+            </CartProvider>
+          </AccountProvider>
         </CatalogProvider>
       </UIProvider>
     </QueryClientProvider>

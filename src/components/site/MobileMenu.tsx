@@ -4,6 +4,7 @@ import * as SheetPrimitive from "@radix-ui/react-dialog";
 
 import { BRAND, CONTACT, NAV_LINKS } from "@/lib/brand";
 import { useShopUI } from "@/store/ui";
+import { useAccount } from "@/store/account";
 
 const UTILITY_LINKS = [
   { label: "Избранное", to: "/wishlist" },
@@ -15,6 +16,7 @@ const UTILITY_LINKS = [
 
 export function MobileMenu() {
   const { menuOpen, closeMenu } = useShopUI();
+  const account = useAccount();
 
   return (
     <SheetPrimitive.Root open={menuOpen} onOpenChange={(open) => (open ? undefined : closeMenu())}>
@@ -54,6 +56,15 @@ export function MobileMenu() {
             <div className="mt-10 border-t border-hairline pt-8">
               <p className="label-caps text-taupe">Покупателю</p>
               <ul className="mt-4 space-y-3">
+                <li>
+                  <Link
+                    to={account.user ? "/account" : "/login"}
+                    onClick={closeMenu}
+                    className="text-sm text-ink-soft"
+                  >
+                    {account.user ? "Личный кабинет" : "Войти"}
+                  </Link>
+                </li>
                 {UTILITY_LINKS.map((item) => (
                   <li key={item.to}>
                     <Link
