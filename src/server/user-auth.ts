@@ -70,6 +70,23 @@ function siteUrl() {
   return url.origin;
 }
 
+function ensureRegistrationEmailReady() {
+  if (getAuthEmailMode() === "stub") return;
+  if (
+    !process.env["SMTP_HOST"] ||
+    !process.env["SMTP_USER"] ||
+    !process.env["SMTP_PASSWORD"] ||
+    !process.env["SMTP_FROM"]
+  ) {
+    throw new Error("Регистрация временно недоступна: отправка писем не настроена.");
+  }
+  try {
+    siteUrl();
+  } catch {
+    throw new Error("Регистрация временно недоступна: адрес сайта не настроен.");
+  }
+}
+
 async function sendTokenEmail(email: string, purpose: TokenPurpose, token: string) {
   const host = process.env["SMTP_HOST"];
   const user = process.env["SMTP_USER"];
@@ -118,6 +135,7 @@ export async function registerUser(input: {
   confirmPassword: string;
 }) {
   if (input.password !== input.confirmPassword) throw new Error("Пароли не совпадают.");
+  ensureRegistrationEmailReady();
   const email = normalizeEmail(input.email);
   await limitEmailAction("register", email, 5);
   const passwordHash = await hash(input.password, { algorithm: Algorithm.Argon2id });

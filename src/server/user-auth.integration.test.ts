@@ -235,4 +235,29 @@ db("customer accounts (local PostgreSQL)", () => {
       process.env["AUTH_EMAIL_MODE"] = "smtp";
     }
   });
+
+  it("does not create an account when SMTP is not configured", async () => {
+    const email = `test-${randomUUID()}@example.test`;
+    const smtpHost = process.env["SMTP_HOST"];
+    delete process.env["SMTP_HOST"];
+    try {
+      await expect(
+        registerUser({
+          name: "Тест",
+          gender: null,
+          email,
+          password: "test-password-123",
+          confirmPassword: "test-password-123",
+        }),
+      ).rejects.toThrow("отправка писем не настроена");
+      const [user] = await getDb()
+        .select({ id: users.id })
+        .from(users)
+        .where(eq(users.email, email));
+      expect(user).toBeUndefined();
+    } finally {
+      if (smtpHost === undefined) delete process.env["SMTP_HOST"];
+      else process.env["SMTP_HOST"] = smtpHost;
+    }
+  });
 });
