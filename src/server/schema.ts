@@ -141,10 +141,14 @@ export const materials = pgTable(
   {
     id: uuid("id").defaultRandom().primaryKey(),
     name: varchar("name", { length: 120 }).notNull(),
+    sortOrder: integer("sort_order").notNull().default(0),
     createdAt,
     updatedAt,
   },
-  (table) => [uniqueIndex("materials_name_unique").on(table.name)],
+  (table) => [
+    uniqueIndex("materials_name_unique").on(table.name),
+    uniqueIndex("materials_sort_order_unique").on(table.sortOrder),
+  ],
 );
 
 export const products = pgTable(
@@ -181,9 +185,9 @@ export const productVariants = pgTable(
     productId: uuid("product_id")
       .notNull()
       .references(() => products.id, { onDelete: "cascade" }),
-    sizeCode: varchar("size_code", { length: 20 })
-      .notNull()
-      .references(() => sizes.code),
+    sizeCode: varchar("size_code", { length: 20 }).notNull(),
+    sizeLabel: varchar("size_label", { length: 80 }).notNull().default(""),
+    sizeOrder: integer("size_order").notNull().default(0),
     system: productSystem("system").notNull().default("standard"),
     price: integer("price").notNull(),
     productionDays: integer("production_days").notNull().default(7),
@@ -386,6 +390,71 @@ export const projectInquiries = pgTable("project_inquiries", {
   projectDetails: text("project_details").notNull(),
   personalDataConsentAt: timestamp("personal_data_consent_at", { withTimezone: true }),
   personalDataConsentText: text("personal_data_consent_text"),
+  createdAt,
+});
+
+export const customPrintMaterials = pgTable("custom_print_materials", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  name: varchar("name", { length: 120 }).notNull(),
+  description: text("description").notNull().default(""),
+  priceRubKg: integer("price_rub_kg").notNull(),
+  active: boolean("active").notNull().default(true),
+  sortOrder: integer("sort_order").notNull().default(0),
+  createdAt,
+  updatedAt,
+});
+
+export const customPrintSettings = pgTable("custom_print_settings", {
+  id: integer("id").primaryKey(),
+  estimatesEnabled: boolean("estimates_enabled").notNull().default(false),
+  machineRubHour: integer("machine_rub_hour").notNull().default(0),
+  laborRubHour: integer("labor_rub_hour").notNull().default(0),
+  gramsPerHour: integer("grams_per_hour").notNull().default(20),
+  setupFeeRub: integer("setup_fee_rub").notNull().default(0),
+  wastePercent: integer("waste_percent").notNull().default(0),
+  markupPercent: integer("markup_percent").notNull().default(0),
+  minimumOrderRub: integer("minimum_order_rub").notNull().default(0),
+  updatedAt,
+});
+
+export const customPrintInquiries = pgTable(
+  "custom_print_inquiries",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    contactName: varchar("contact_name", { length: 160 }).notNull(),
+    phone: varchar("phone", { length: 60 }).notNull(),
+    email: varchar("email", { length: 254 }).notNull(),
+    description: text("description").notNull(),
+    modelStatus: varchar("model_status", { length: 30 }).notNull(),
+    materialId: uuid("material_id").references(() => customPrintMaterials.id, {
+      onDelete: "set null",
+    }),
+    materialName: varchar("material_name", { length: 120 }),
+    color: varchar("color", { length: 120 }),
+    quantity: integer("quantity").notNull(),
+    estimatedGrams: integer("estimated_grams"),
+    dimensions: varchar("dimensions", { length: 200 }),
+    purpose: varchar("purpose", { length: 120 }),
+    desiredDate: varchar("desired_date", { length: 80 }),
+    quoteRub: integer("quote_rub"),
+    status: varchar("status", { length: 24 }).notNull().default("new"),
+    personalDataConsentAt: timestamp("personal_data_consent_at", { withTimezone: true }).notNull(),
+    personalDataConsentText: text("personal_data_consent_text").notNull(),
+    createdAt,
+    updatedAt,
+  },
+  (table) => [index("custom_print_inquiries_created_idx").on(table.createdAt)],
+);
+
+export const customPrintFiles = pgTable("custom_print_files", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  inquiryId: uuid("inquiry_id")
+    .notNull()
+    .references(() => customPrintInquiries.id, { onDelete: "cascade" }),
+  objectKey: varchar("object_key", { length: 500 }).notNull(),
+  fileName: varchar("file_name", { length: 255 }).notNull(),
+  byteSize: integer("byte_size").notNull(),
+  contentType: varchar("content_type", { length: 120 }).notNull(),
   createdAt,
 });
 

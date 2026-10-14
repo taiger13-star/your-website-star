@@ -10,6 +10,8 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as R3dDesignRouteImport } from './routes/3d-design'
+import { Route as R3dPrintingRouteImport } from './routes/3d-printing'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AccountRouteImport } from './routes/account'
 import { Route as BusinessRouteImport } from './routes/business'
@@ -38,6 +40,16 @@ import { Route as AdminTokenIndexRouteImport } from './routes/admin/$token/index
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const R3dDesignRoute = R3dDesignRouteImport.update({
+  id: '/3d-design',
+  path: '/3d-design',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const R3dPrintingRoute = R3dPrintingRouteImport.update({
+  id: '/3d-printing',
+  path: '/3d-printing',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AboutRoute = AboutRouteImport.update({
@@ -163,6 +175,8 @@ const AdminTokenIndexRoute = AdminTokenIndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/3d-design': typeof R3dDesignRoute
+  '/3d-printing': typeof R3dPrintingRoute
   '/about': typeof AboutRoute
   '/account': typeof AccountRoute
   '/business': typeof BusinessRoute
@@ -190,6 +204,8 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/3d-design': typeof R3dDesignRoute
+  '/3d-printing': typeof R3dPrintingRoute
   '/about': typeof AboutRoute
   '/account': typeof AccountRoute
   '/business': typeof BusinessRoute
@@ -218,6 +234,8 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/3d-design': typeof R3dDesignRoute
+  '/3d-printing': typeof R3dPrintingRoute
   '/about': typeof AboutRoute
   '/account': typeof AccountRoute
   '/business': typeof BusinessRoute
@@ -247,6 +265,8 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/3d-design'
+    | '/3d-printing'
     | '/about'
     | '/account'
     | '/business'
@@ -274,6 +294,8 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/3d-design'
+    | '/3d-printing'
     | '/about'
     | '/account'
     | '/business'
@@ -301,6 +323,8 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/3d-design'
+    | '/3d-printing'
     | '/about'
     | '/account'
     | '/business'
@@ -329,6 +353,8 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  R3dDesignRoute: typeof R3dDesignRoute
+  R3dPrintingRoute: typeof R3dPrintingRoute
   AboutRoute: typeof AboutRoute
   AccountRoute: typeof AccountRoute
   BusinessRoute: typeof BusinessRoute
@@ -362,6 +388,20 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/3d-design': {
+      id: '/3d-design'
+      path: '/3d-design'
+      fullPath: '/3d-design'
+      preLoaderRoute: typeof R3dDesignRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/3d-printing': {
+      id: '/3d-printing'
+      path: '/3d-printing'
+      fullPath: '/3d-printing'
+      preLoaderRoute: typeof R3dPrintingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/about': {
@@ -537,6 +577,8 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  R3dDesignRoute: R3dDesignRoute,
+  R3dPrintingRoute: R3dPrintingRoute,
   AboutRoute: AboutRoute,
   AccountRoute: AccountRoute,
   BusinessRoute: BusinessRoute,

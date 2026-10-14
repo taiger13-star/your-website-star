@@ -5,6 +5,7 @@ import { createFileRoute, notFound, useRouter } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { getAdminUsersFn } from "@/lib/account-functions";
 import { paymentStatusLabel } from "@/lib/order-payment";
+import { CustomPrintAdmin } from "@/components/admin/CustomPrintAdmin";
 
 import {
   deleteCollectionFn,
@@ -38,7 +39,7 @@ export const Route = createFileRoute("/admin/$token/")({
   component: AdminPage,
 });
 
-type Tab = "products" | "collections" | "references" | "media" | "orders" | "users";
+type Tab = "products" | "collections" | "references" | "media" | "orders" | "users" | "customPrint";
 
 function AdminPage() {
   const state = Route.useLoaderData();
@@ -75,9 +76,10 @@ function AdminPage() {
             [
               ["products", "Товары"],
               ["collections", "Коллекции"],
-              ["references", "Параметры"],
+              ["references", "Цвета и материалы"],
               ["media", "Фото"],
               ["orders", "Заказы"],
+              ["customPrint", "3D-печать"],
               ["users", "Пользователи"],
             ] as [Tab, string][]
           ).map(([id, label]) => (
@@ -96,6 +98,7 @@ function AdminPage() {
         {tab === "references" ? <References data={data} refresh={refresh} /> : null}
         {tab === "media" ? <Media data={data} refresh={refresh} /> : null}
         {tab === "orders" ? <Orders data={data} refresh={refresh} /> : null}
+        {tab === "customPrint" ? <CustomPrintAdmin /> : null}
         {tab === "users" ? <Users /> : null}
       </main>
     </div>
@@ -170,6 +173,8 @@ function Products({ data, refresh }: { data: any; refresh: () => void }) {
               variants: [
                 {
                   sizeCode: "M",
+                  sizeLabel: "M",
+                  sizeOrder: 0,
                   system: "standard",
                   price: 0,
                   productionDays: 7,
@@ -408,7 +413,7 @@ function ProductForm({
         label="Материалы через запятую"
         defaultValue={(item.materialNames ?? []).join(", ")}
       />
-      <VariantEditor data={data} variants={variants} onChange={setVariants} />
+      <VariantEditor variants={variants} onChange={setVariants} />
       <SpecificationEditor
         variants={variants}
         items={specifications}
@@ -438,20 +443,27 @@ const measurementFields = [
 ] as const;
 
 function VariantEditor({
-  data,
   variants,
   onChange,
 }: {
-  data: any;
   variants: any[];
   onChange: (value: any[]) => void;
 }) {
-  const update = (index: number, patch: any) =>
+  const update = (index: number, patch: any) => {
+    const current = variants[index];
     onChange(
-      variants.map((variant, itemIndex) =>
-        itemIndex === index ? { ...variant, ...patch } : variant,
-      ),
+      variants.map((variant, itemIndex) => {
+        if (itemIndex === index) return { ...variant, ...patch };
+        if (
+          variant.sizeCode === current.sizeCode &&
+          current.sizeCode &&
+          (patch.sizeLabel !== undefined || patch.sizeOrder !== undefined)
+        )
+          return { ...variant, ...patch };
+        return variant;
+      }),
     );
+  };
   const updateMeasurement = (index: number, field: string, value: string) => {
     const number = value === "" ? null : Number(value);
     update(index, { measurements: { ...variants[index].measurements, [field]: number } });
@@ -466,7 +478,9 @@ function VariantEditor({
             onChange([
               ...variants,
               {
-                sizeCode: "M",
+                sizeCode: "",
+                sizeLabel: "",
+                sizeOrder: variants.length,
                 system: "standard",
                 price: 0,
                 productionDays: 7,
@@ -485,25 +499,45 @@ function VariantEditor({
         </button>
       </div>
       <div className="mt-3 space-y-4">
+        <p className="text-xs text-muted-foreground">
+          Код, название и порядок размера задаются только для этого товара. Габариты укажите ниже
+          для каждого исполнения.
+        </p>
         {variants.map((variant, index) => (
           <article
             key={`${variant.id ?? "new"}-${index}`}
             className="border border-hairline bg-surface p-4"
           >
-            <div className="grid gap-3 md:grid-cols-5">
+            <div className="grid gap-3 md:grid-cols-7">
               <label className="text-xs">
-                Размер
-                <select
+                Код размера
+                <input
                   value={variant.sizeCode}
                   onChange={(event) => update(index, { sizeCode: event.target.value })}
+                  maxLength={20}
+                  required
                   className="mt-1 w-full border border-hairline bg-background p-2 text-sm"
-                >
-                  {data.sizes.map((size: any) => (
-                    <option key={size.code} value={size.code}>
-                      {size.label}
-                    </option>
-                  ))}
-                </select>
+                />
+              </label>
+              <label className="text-xs">
+                Название размера
+                <input
+                  value={variant.sizeLabel ?? variant.sizeCode}
+                  onChange={(event) => update(index, { sizeLabel: event.target.value })}
+                  maxLength={80}
+                  required
+                  className="mt-1 w-full border border-hairline bg-background p-2 text-sm"
+                />
+              </label>
+              <label className="text-xs">
+                Порядок
+                <input
+                  type="number"
+                  min="0"
+                  value={variant.sizeOrder ?? 0}
+                  onChange={(event) => update(index, { sizeOrder: Number(event.target.value) })}
+                  className="mt-1 w-full border border-hairline bg-background p-2 text-sm"
+                />
               </label>
               <label className="text-xs">
                 Исполнение
@@ -870,7 +904,7 @@ function CollectionForm({
 }
 
 function References({ data, refresh }: { data: any; refresh: () => void }) {
-  const [type, setType] = useState<"size" | "color" | "material">("size");
+  const [type, setType] = useState<"color" | "material">("color");
   const submit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const f = new FormData(event.currentTarget);
@@ -890,7 +924,9 @@ function References({ data, refresh }: { data: any; refresh: () => void }) {
       toast.error(error instanceof Error ? error.message : "Ошибка");
     }
   };
-  const rows = type === "size" ? data.sizes : type === "color" ? data.colors : data.materials;
+  const rows = type === "color" ? data.colors : data.materials;
+  const nextMaterialOrder =
+    Math.max(-1, ...data.materials.map((item: any) => item.sortOrder ?? 0)) + 1;
   const remove = async (id: string) => {
     try {
       await deleteReferenceFn({ data: { type, id } });
@@ -902,37 +938,59 @@ function References({ data, refresh }: { data: any; refresh: () => void }) {
   return (
     <section className="py-8">
       <p className="label-caps text-taupe">Справочники</p>
-      <h2 className="display-md mt-2">Размеры, цвета, материалы</h2>
+      <h2 className="display-md mt-2">Цвета и материалы</h2>
       <div className="mt-6 flex gap-2">
-        {(["size", "color", "material"] as const).map((item) => (
+        {(["color", "material"] as const).map((item) => (
           <button
             key={item}
             onClick={() => setType(item)}
             className={`border px-4 py-2 text-xs uppercase ${type === item ? "border-ink bg-ink text-primary-foreground" : "border-hairline"}`}
           >
-            {item === "size" ? "Размеры" : item === "color" ? "Цвета" : "Материалы"}
+            {item === "color" ? "Цвета" : "Материалы"}
           </button>
         ))}
       </div>
       <form
+        key={type === "material" ? `material-${nextMaterialOrder}` : "color"}
         onSubmit={submit}
         className="mt-5 flex flex-wrap gap-3 border border-hairline bg-background p-4"
       >
         <Field
           name="id"
-          label={type === "size" ? "Код" : "ID (необязательно)"}
-          required={type === "size"}
+          label={type === "material" ? "ID (UUID, необязательно)" : "ID (необязательно)"}
         />
         <Field name="label" label="Название" required />
         {type === "color" ? <Field name="hex" label="#RRGGBB" required /> : null}
-        <Field name="sortOrder" label="Порядок" type="number" defaultValue="0" />
+        <Field
+          name="sortOrder"
+          label="Порядок"
+          type="number"
+          min="0"
+          required
+          defaultValue={type === "material" ? nextMaterialOrder : 0}
+        />
         <button className="self-end bg-ink px-4 py-2.5 text-xs uppercase text-primary-foreground">
           Добавить
         </button>
       </form>
-      <div className="mt-5 divide-y divide-hairline border border-hairline bg-background">
+      {type === "material" ? (
+        <p className="mt-2 text-xs text-muted-foreground">
+          Порядок материала должен быть уникальным.
+        </p>
+      ) : null}
+      <div className="mt-5 overflow-x-auto border border-hairline bg-background">
+        <div className="grid min-w-[40rem] grid-cols-[minmax(0,1fr)_minmax(0,2fr)_5rem_4rem] gap-3 p-3 text-xs uppercase text-taupe">
+          <span>ID</span>
+          <span>Название</span>
+          <span>Порядок</span>
+          <span />
+        </div>
         {rows.map((row: any) => (
-          <div key={row.id ?? row.code} className="flex items-center justify-between p-3 text-sm">
+          <div
+            key={row.id}
+            className="grid min-w-[40rem] grid-cols-[minmax(0,1fr)_minmax(0,2fr)_5rem_4rem] items-center gap-3 border-t border-hairline p-3 text-sm"
+          >
+            <span className="break-all text-xs text-taupe">{row.id}</span>
             <span>
               {row.label ?? row.name}{" "}
               {row.hex ? (
@@ -942,10 +1000,8 @@ function References({ data, refresh }: { data: any; refresh: () => void }) {
                 />
               ) : null}
             </span>
-            <button
-              onClick={() => remove(row.id ?? row.code)}
-              className="text-destructive underline"
-            >
+            <span>{row.sortOrder ?? 0}</span>
+            <button onClick={() => remove(row.id)} className="text-destructive underline">
               Удалить
             </button>
           </div>

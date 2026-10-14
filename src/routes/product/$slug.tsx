@@ -57,7 +57,7 @@ function ProductPage() {
       productId: product.id,
       variantId: variant.id,
       sku: product.sku,
-      size: displaySize(variant.sizeCode, variant.measurements),
+      size: displaySize(variant.sizeLabel, variant.measurements),
       bodyColor: selectedColor.id,
       insertColor: selectedColor.id,
       system: variant.system,
@@ -85,9 +85,9 @@ function ProductPage() {
               alt={`${product.name} — фото ${imageIndex + 1}`}
               className="h-full w-full object-cover"
             />
-            <DimensionOverlay sizeCode={variant.sizeCode} measurements={variant.measurements} />
+            <DimensionOverlay sizeCode={variant.sizeLabel} measurements={variant.measurements} />
             <div className="absolute left-4 top-4 bg-ink/80 px-3 py-2 text-[10px] uppercase tracking-[0.14em] text-sand backdrop-blur-sm">
-              {displaySize(variant.sizeCode, variant.measurements)}
+              {displaySize(variant.sizeLabel, variant.measurements)}
             </div>
           </div>
           {product.images.length > 1 ? (
@@ -183,7 +183,7 @@ function ProductPage() {
                       onClick={() => setVariantId(item.id)}
                       className={`grid gap-1 border p-4 text-left text-sm transition-colors sm:grid-cols-[1fr_auto] sm:items-center ${variantId === item.id ? "border-ink bg-secondary" : "border-hairline hover:border-ink/50"}`}
                     >
-                      <span>{displaySize(item.sizeCode, item.measurements)}</span>
+                      <span>{displaySize(item.sizeLabel, item.measurements)}</span>
                       <span className="text-ink-soft">
                         {formatPrice(item.price)} · {item.productionDays} дн.
                       </span>

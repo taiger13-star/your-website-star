@@ -41,6 +41,7 @@ export type NavItem = { label: string; to: string; hash?: string };
 export const NAV_LINKS: NavItem[] = [
   { label: "Коллекции", to: "/", hash: "collections" },
   { label: "Каталог", to: "/catalog" },
+  { label: "3D-печать на заказ", to: "/3d-printing" },
   { label: "NOIR SMART", to: "/smart" },
   { label: "Для бизнеса", to: "/business" },
   { label: "О бренде", to: "/about" },
@@ -51,6 +52,8 @@ export const FOOTER_SECTIONS: { title: string; links: NavItem[] }[] = [
     title: "Каталог",
     links: [
       { label: "Все изделия", to: "/catalog" },
+      { label: "3D-печать на заказ", to: "/3d-printing" },
+      { label: "Разработка изделия с нуля", to: "/3d-design" },
       { label: "Коллекции", to: "/", hash: "collections" },
       { label: "NOIR SMART", to: "/smart" },
       { label: "Для бизнеса", to: "/business" },

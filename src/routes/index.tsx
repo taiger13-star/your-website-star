@@ -71,6 +71,9 @@ function IndexPage() {
               <Link to="/smart" className={ctaGhostStyles}>
                 NOIR SMART
               </Link>
+              <Link to="/3d-printing" className={ctaGhostStyles}>
+                3D-печать на заказ
+              </Link>
             </div>
             <dl className="mt-12 grid max-w-lg grid-cols-2 gap-x-8 gap-y-6 border-t border-hairline pt-8 sm:grid-cols-3">
               {[

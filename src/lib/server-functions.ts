@@ -21,7 +21,9 @@ const measurementsSchema = z.object({
 });
 const packageValue = z.number().int().positive().nullable().optional();
 const variantSchema = z.object({
-  sizeCode: z.string().min(1),
+  sizeCode: z.string().trim().min(1).max(20),
+  sizeLabel: z.string().trim().min(1).max(80),
+  sizeOrder: z.number().int().min(0).max(1000),
   system: z.enum(["standard", "smart"]),
   price: z.number().int().nonnegative(),
   productionDays: z.number().int().min(0).max(3650),
@@ -81,7 +83,7 @@ const refSchema = z.object({
   id: z.string().optional(),
   label: z.string().min(1),
   hex: z.string().optional(),
-  sortOrder: z.number().int().optional(),
+  sortOrder: z.number().int().min(0).optional(),
 });
 
 export const getCatalogFn = createServerFn({ method: "GET" }).handler(async () => {

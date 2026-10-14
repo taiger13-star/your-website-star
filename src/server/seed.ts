@@ -1,7 +1,7 @@
 import "dotenv/config";
 
 import { createServer } from "vite";
-import { eq } from "drizzle-orm";
+import { eq, max } from "drizzle-orm";
 
 import { closeDb, getDb } from "./db";
 import {
@@ -320,11 +320,19 @@ async function main() {
       collectionIds.set(item.id, row!.id);
     }
     for (const item of staticProducts) {
-      const [material] = await db
-        .insert(materials)
-        .values({ name: item.material, updatedAt: new Date() })
-        .onConflictDoUpdate({ target: materials.name, set: { updatedAt: new Date() } })
-        .returning({ id: materials.id });
+      const [existingMaterial] = await db
+        .select({ id: materials.id })
+        .from(materials)
+        .where(eq(materials.name, item.material));
+      let materialId = existingMaterial?.id;
+      if (!materialId) {
+        const [last] = await db.select({ value: max(materials.sortOrder) }).from(materials);
+        const [created] = await db
+          .insert(materials)
+          .values({ name: item.material, sortOrder: (last?.value ?? -1) + 1 })
+          .returning({ id: materials.id });
+        materialId = created!.id;
+      }
       const [product] = await db
         .insert(products)
         .values({
@@ -368,13 +376,15 @@ async function main() {
         db.delete(productMaterials).where(eq(productMaterials.productId, productId)),
         db.delete(productImages).where(eq(productImages.productId, productId)),
       ]);
-      await db.insert(productMaterials).values({ productId, materialId: material!.id });
+      await db.insert(productMaterials).values({ productId, materialId });
       await db.insert(productColors).values(item.colors.map((colorId) => ({ productId, colorId })));
       const variants = item.sizes.flatMap((sizeCode) => {
         const standard = catalog.priceFor(item as never, sizeCode as never, "standard");
         const systems: {
           productId: string;
           sizeCode: string;
+          sizeLabel: string;
+          sizeOrder: number;
           system: "standard" | "smart";
           price: number;
           productionDays: number;
@@ -383,6 +393,8 @@ async function main() {
           {
             productId,
             sizeCode,
+            sizeLabel: sizeCode,
+            sizeOrder: catalog.SIZES.findIndex((size) => size.code === sizeCode),
             system: "standard",
             price: standard,
             productionDays: 7,
@@ -393,6 +405,8 @@ async function main() {
           systems.push({
             productId,
             sizeCode,
+            sizeLabel: sizeCode,
+            sizeOrder: catalog.SIZES.findIndex((size) => size.code === sizeCode),
             system: "smart" as const,
             price: catalog.priceFor(item as never, sizeCode as never, "smart"),
             productionDays: 10,

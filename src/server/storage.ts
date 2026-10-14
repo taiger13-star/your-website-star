@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import {
   CreateBucketCommand,
   DeleteObjectCommand,
+  GetObjectCommand,
   HeadBucketCommand,
   PutBucketPolicyCommand,
   PutObjectCommand,
@@ -28,6 +29,7 @@ function config() {
 }
 
 let initialized: Promise<void> | undefined;
+let privateInitialized: Promise<void> | undefined;
 
 function getClient() {
   const value = config();
@@ -95,4 +97,61 @@ export async function removeObject(objectKey: string) {
   await ensurePublicBucket();
   const { bucket } = config();
   await getClient().send(new DeleteObjectCommand({ Bucket: bucket, Key: objectKey }));
+}
+
+function privateBucket() {
+  const bucket = process.env["MINIO_PRIVATE_BUCKET"] ?? "noir-inquiries";
+  if (bucket === config().bucket)
+    throw new Error("Private file bucket must differ from the public media bucket.");
+  return bucket;
+}
+
+async function ensurePrivateBucket() {
+  if (!privateInitialized) {
+    privateInitialized = (async () => {
+      const client = getClient();
+      const bucket = privateBucket();
+      try {
+        await client.send(new HeadBucketCommand({ Bucket: bucket }));
+      } catch {
+        await client.send(new CreateBucketCommand({ Bucket: bucket }));
+      }
+    })().catch((error) => {
+      privateInitialized = undefined;
+      throw error;
+    });
+  }
+  return privateInitialized;
+}
+
+export async function uploadPrivateObject(input: {
+  body: Uint8Array;
+  extension: string;
+  contentType: string;
+}) {
+  await ensurePrivateBucket();
+  const objectKey = `custom-print/${new Date().toISOString().slice(0, 10)}/${randomUUID()}.${input.extension}`;
+  await getClient().send(
+    new PutObjectCommand({
+      Bucket: privateBucket(),
+      Key: objectKey,
+      Body: input.body,
+      ContentType: input.contentType,
+    }),
+  );
+  return objectKey;
+}
+
+export async function readPrivateObject(objectKey: string) {
+  await ensurePrivateBucket();
+  const object = await getClient().send(
+    new GetObjectCommand({ Bucket: privateBucket(), Key: objectKey }),
+  );
+  if (!object.Body) throw new Error("Файл не найден.");
+  return object.Body.transformToByteArray();
+}
+
+export async function removePrivateObject(objectKey: string) {
+  await ensurePrivateBucket();
+  await getClient().send(new DeleteObjectCommand({ Bucket: privateBucket(), Key: objectKey }));
 }

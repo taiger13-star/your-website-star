@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, inArray } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, max } from "drizzle-orm";
 
 import { getDb } from "./db";
 import {
@@ -41,6 +41,8 @@ export type AdminProductInput = {
   mediaIds: string[];
   variants: {
     sizeCode: string;
+    sizeLabel: string;
+    sizeOrder: number;
     system: "standard" | "smart";
     price: number;
     productionDays: number;
@@ -141,7 +143,7 @@ export async function getAdminSnapshot() {
     db.select().from(mediaAssets).orderBy(desc(mediaAssets.createdAt)),
     db.select().from(sizes).orderBy(asc(sizes.sortOrder)),
     db.select().from(colors).orderBy(asc(colors.sortOrder)),
-    db.select().from(materials).orderBy(asc(materials.name)),
+    db.select().from(materials).orderBy(asc(materials.sortOrder), asc(materials.name)),
     db.select().from(orders).orderBy(desc(orders.createdAt)),
   ]);
   const orderIds = orderRows.map((order) => order.id);
@@ -207,6 +209,16 @@ export async function saveProduct(input: AdminProductInput) {
   if (!slug || !input.name.trim() || !input.sku.trim())
     throw new Error("Заполните название, slug и SKU.");
   if (!input.variants.length) throw new Error("Добавьте хотя бы один вариант товара.");
+  const sizeSettings = new Map<string, string>();
+  for (const variant of input.variants) {
+    const code = variant.sizeCode.trim();
+    const label = variant.sizeLabel.trim();
+    if (!code || !label) throw new Error("Укажите код и название размера у каждого варианта.");
+    const settings = `${label}:${variant.sizeOrder}`;
+    if (sizeSettings.has(code) && sizeSettings.get(code) !== settings)
+      throw new Error(`У размера ${code} различаются название или порядок между исполнениями.`);
+    sizeSettings.set(code, settings);
+  }
   const values = {
     slug,
     sku: input.sku.trim(),
@@ -242,6 +254,8 @@ export async function saveProduct(input: AdminProductInput) {
       .values(
         input.variants.map(({ measurements: _measurements, ...variant }) => ({
           ...variant,
+          sizeCode: variant.sizeCode.trim(),
+          sizeLabel: variant.sizeLabel.trim(),
           productId,
         })),
       )
@@ -299,12 +313,20 @@ export async function saveProduct(input: AdminProductInput) {
     for (const materialName of [
       ...new Set(input.materialNames.map((item) => item.trim()).filter(Boolean)),
     ]) {
-      const [material] = await tx
-        .insert(materials)
-        .values({ name: materialName, updatedAt: new Date() })
-        .onConflictDoUpdate({ target: materials.name, set: { updatedAt: new Date() } })
-        .returning({ id: materials.id });
-      await tx.insert(productMaterials).values({ productId, materialId: material!.id });
+      const [existingMaterial] = await tx
+        .select({ id: materials.id })
+        .from(materials)
+        .where(eq(materials.name, materialName));
+      let materialId = existingMaterial?.id;
+      if (!materialId) {
+        const [last] = await tx.select({ value: max(materials.sortOrder) }).from(materials);
+        const [created] = await tx
+          .insert(materials)
+          .values({ name: materialName, sortOrder: (last?.value ?? -1) + 1 })
+          .returning({ id: materials.id });
+        materialId = created!.id;
+      }
+      await tx.insert(productMaterials).values({ productId, materialId });
     }
     if (input.mediaIds.length)
       await tx
@@ -399,10 +421,36 @@ export async function saveReference(input: {
     return;
   }
   const name = input.label.trim();
+  const id = input.id?.trim();
+  if (
+    id &&
+    !/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(id)
+  )
+    throw new Error("ID материала должен быть UUID.");
+  const [existing] = await db
+    .select({ id: materials.id })
+    .from(materials)
+    .where(eq(materials.name, name));
+  if (existing && id && existing.id !== id)
+    throw new Error("Материал с таким названием уже существует с другим ID.");
+  const [last] =
+    input.sortOrder === undefined
+      ? await db.select({ value: max(materials.sortOrder) }).from(materials)
+      : [];
+  const sortOrder = input.sortOrder ?? (last?.value ?? -1) + 1;
+  const [sameOrder] = await db
+    .select({ id: materials.id })
+    .from(materials)
+    .where(eq(materials.sortOrder, sortOrder));
+  if (sameOrder && sameOrder.id !== existing?.id)
+    throw new Error(`Порядок ${sortOrder} уже занят другим материалом.`);
   await db
     .insert(materials)
-    .values({ name, updatedAt: new Date() })
-    .onConflictDoUpdate({ target: materials.name, set: { updatedAt: new Date() } });
+    .values({ id: id || undefined, name, sortOrder, updatedAt: new Date() })
+    .onConflictDoUpdate({
+      target: materials.name,
+      set: { sortOrder, updatedAt: new Date() },
+    });
 }
 
 export async function deleteReference(input: { type: "size" | "color" | "material"; id: string }) {

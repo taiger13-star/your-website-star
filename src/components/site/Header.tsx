@@ -55,7 +55,7 @@ export function Header() {
             {BRAND.name}
           </Link>
 
-          <nav className="hidden items-center gap-8 lg:flex" aria-label="Основная навигация">
+          <nav className="hidden items-center gap-6 xl:flex" aria-label="Основная навигация">
             {NAV_LINKS.map((item) => (
               <Link
                 key={item.to}
@@ -99,7 +99,7 @@ export function Header() {
               type="button"
               onClick={openMenu}
               aria-label="Меню"
-              className="flex h-10 w-10 items-center justify-center text-ink-soft transition-colors duration-300 hover:text-foreground lg:hidden"
+              className="flex h-10 w-10 items-center justify-center text-ink-soft transition-colors duration-300 hover:text-foreground xl:hidden"
             >
               <Menu className="h-[18px] w-[18px]" strokeWidth={1.25} />
             </button>

@@ -105,6 +105,25 @@ function BusinessPage() {
             ))}
           </ul>
         </div>
+        <div className="mt-12 border border-hairline p-6 md:p-8">
+          <p className="label-caps text-taupe">Отдельная деталь или прототип?</p>
+          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-ink-soft">
+            Для печати по готовой 3D-модели доступен предварительный расчёт. Если есть только идея
+            или эскиз, начнём с разработки изделия.
+          </p>
+          <Link
+            to="/3d-printing"
+            className="mt-5 inline-block text-xs uppercase tracking-[0.16em] underline"
+          >
+            Печать по готовой модели
+          </Link>
+          <Link
+            to="/3d-design"
+            className="ml-0 mt-5 inline-block text-xs uppercase tracking-[0.16em] underline sm:ml-7"
+          >
+            Разработка изделия с нуля
+          </Link>
+        </div>
       </section>
 
       <section id="project-form" className="border-y border-hairline bg-ink">

@@ -51,6 +51,7 @@ export type PublicProduct = {
   variants: {
     id: string;
     sizeCode: string;
+    sizeLabel: string;
     system: "standard" | "smart";
     price: number;
     productionDays: number;
@@ -124,7 +125,12 @@ export async function getPublicCatalog(): Promise<CatalogSnapshot> {
         db
           .select()
           .from(productVariants)
-          .where(and(inArray(productVariants.productId, ids), eq(productVariants.enabled, true))),
+          .where(and(inArray(productVariants.productId, ids), eq(productVariants.enabled, true)))
+          .orderBy(
+            asc(productVariants.sizeOrder),
+            asc(productVariants.sizeCode),
+            asc(productVariants.system),
+          ),
         db
           .select({
             productId: productImages.productId,
@@ -179,9 +185,10 @@ export async function getPublicCatalog(): Promise<CatalogSnapshot> {
         .map((row) => row.material),
       variants: variantRows
         .filter((row) => row.productId === product.id)
-        .map(({ id, sizeCode, system, price, productionDays }) => ({
+        .map(({ id, sizeCode, sizeLabel, system, price, productionDays }) => ({
           id,
           sizeCode,
+          sizeLabel,
           system,
           price,
           productionDays,
