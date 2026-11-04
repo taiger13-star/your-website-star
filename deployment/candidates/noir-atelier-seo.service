@@ -1,0 +1,18 @@
+# Candidate only. Not installed on the VPS.
+[Unit]
+Description=NOIR ATELIER SEO storefront
+After=network-online.target noir-atelier.service
+StartLimitIntervalSec=60
+StartLimitBurst=3
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/noir-atelier-releases/seo-20261104-ad386e0
+EnvironmentFile=/opt/noir-atelier/.env
+ExecStart=/usr/bin/env NODE_ENV=production HOST=127.0.0.1 PORT=3101 NITRO_HOST=127.0.0.1 NITRO_PORT=3101 /usr/bin/node .output/server/index.mjs
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=20s
+
+[Install]
+WantedBy=multi-user.target
