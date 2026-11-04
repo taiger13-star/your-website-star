@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { trackGoal } from "@/lib/analytics";
+import { useEffect, useRef, useState } from "react";
 import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 
@@ -33,6 +34,16 @@ function CheckoutPage() {
   const user = Route.useLoaderData();
   const navigate = useNavigate();
   const { productById } = useCatalog();
+  const checkoutTracked = useRef(false);
+  useEffect(() => {
+    if (items.length && !checkoutTracked.current) {
+      trackGoal("begin_checkout", {
+        value: items.reduce((sum, item) => sum + item.unitPrice * item.qty, 0),
+        currency: "RUB",
+      });
+      checkoutTracked.current = true;
+    }
+  }, [items]);
   const [pending, setPending] = useState(false);
   const [checkoutKey, setCheckoutKey] = useState(() => crypto.randomUUID());
   const [createdOrderId, setCreatedOrderId] = useState<string | null>(null);
@@ -257,6 +268,7 @@ function CheckoutPage() {
         return;
       }
       const order = result.order;
+      trackGoal("order_created", { order_id: order.id });
       savedOrderId = order.id;
       setCreatedOrderId(order.id);
       sessionStorage.setItem("noir-pending-checkout-order", order.id);

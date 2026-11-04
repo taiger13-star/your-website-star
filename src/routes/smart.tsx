@@ -10,16 +10,6 @@ import { getSmartCatalogPrices } from "@/lib/smart-comparison";
 import { useCatalog } from "@/store/catalog";
 
 export const Route = createFileRoute("/smart")({
-  head: () => ({
-    meta: [
-      { title: "NOIR SMART — функциональные кашпо" },
-      {
-        name: "description",
-        content:
-          "NOIR SMART — функциональные кашпо с резервуаром, контролем уровня воды и капиллярной подачей влаги.",
-      },
-    ],
-  }),
   component: SmartPage,
 });
 
@@ -42,7 +32,7 @@ const features = [
   [
     Gauge,
     "Контроль уровня",
-    "Прозрачное вертикальное окно, отметки MIN / MAX и поплавок показывают, когда пора долить воду.",
+    "Поплавковый индикатор сверху показывает уровень воды и помогает определить, когда пора долить воду.",
   ],
   [
     Sprout,
@@ -71,7 +61,7 @@ function SmartPage() {
           <figure className="overflow-hidden bg-secondary">
             <img
               src={smartDetail}
-              alt="Прозрачное окно уровня воды в кашпо NOIR SMART"
+              alt="Иллюстрация системы автополива NOIR SMART"
               className="h-full w-full object-cover"
             />
           </figure>

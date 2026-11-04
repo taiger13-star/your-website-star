@@ -29,12 +29,6 @@ export const Route = createFileRoute("/catalog")({
       ? (search.sort as CatalogSearch["sort"])
       : undefined,
   }),
-  head: () => ({
-    meta: [
-      { title: "Каталог — NOIR ATELIER" },
-      { name: "description", content: "Каталог дизайнерских изделий NOIR ATELIER." },
-    ],
-  }),
   component: CatalogPage,
 });
 
@@ -95,6 +89,11 @@ function CatalogPage() {
             "Выбирайте форму, цвет, размер и систему Standard или NOIR SMART."}
         </p>
       </div>
+      <nav aria-label="Подбор изделий" className="mt-6 flex flex-wrap gap-5 text-sm underline">
+        <Link to="/collections">Все коллекции</Link>
+        <Link to="/smart">Кашпо с автополивом</Link>
+        <Link to="/configurator">Кашпо на заказ по размеру</Link>
+      </nav>
       <div className="mt-8 grid gap-8 lg:grid-cols-[15rem_1fr]">
         <aside className="space-y-5 border-b border-hairline pb-6 lg:border-b-0 lg:border-r lg:pr-7">
           <div>

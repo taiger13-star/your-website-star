@@ -12,7 +12,10 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
-import { BRAND, NAV_LINKS } from "../lib/brand";
+import { BRAND, CONTACT, NAV_LINKS } from "../lib/brand";
+import { pageHead, SITE_ORIGIN } from "../lib/seo";
+import { JsonLd } from "../components/site/JsonLd";
+import { Analytics } from "../components/site/Analytics";
 import { Header } from "../components/site/Header";
 import { Footer } from "../components/site/Footer";
 import { CartDrawer } from "../components/site/CartDrawer";
@@ -105,41 +108,47 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   loader: () => getCatalogFn(),
-  head: () => ({
-    meta: [
-      { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: `${BRAND.name} — ${BRAND.valuesRu}` },
-      {
-        name: "description",
-        content: `${BRAND.name}: ${BRAND.heroLine} Производство в ${BRAND.country}, изделия под заказ.`,
-      },
-      { name: "author", content: BRAND.name },
-      { name: "theme-color", content: "#0B0B0A" },
-      { property: "og:site_name", content: BRAND.name },
-      { property: "og:title", content: `${BRAND.name} — ${BRAND.valuesRu}` },
-      {
-        property: "og:description",
-        content: BRAND.heroLine,
-      },
-      { property: "og:type", content: "website" },
-      { property: "og:locale", content: "ru_RU" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-    links: [
-      {
-        rel: "stylesheet",
-        href: appCss,
-      },
-      { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300&family=Manrope:wght@300;400;500;600&display=swap",
-      },
-    ],
-  }),
+  head: ({ matches, loaderData }) => {
+    const leaf = matches[matches.length - 1];
+    const seo = pageHead(
+      leaf?.pathname ?? "/",
+      leaf?.search,
+      loaderData,
+      matches.some((m) => m.status === "notFound" || m.globalNotFound),
+    );
+    return {
+      meta: [
+        { charSet: "utf-8" },
+        { name: "viewport", content: "width=device-width, initial-scale=1" },
+        ...seo.meta,
+        { name: "author", content: BRAND.name },
+        { name: "theme-color", content: "#0B0B0A" },
+        { property: "og:site_name", content: BRAND.name },
+        { property: "og:locale", content: "ru_RU" },
+        { name: "twitter:card", content: "summary_large_image" },
+        ...(import.meta.env["VITE_YANDEX_VERIFICATION"]
+          ? [{ name: "yandex-verification", content: import.meta.env["VITE_YANDEX_VERIFICATION"] }]
+          : []),
+        ...(import.meta.env["VITE_GOOGLE_SITE_VERIFICATION"]
+          ? [
+              {
+                name: "google-site-verification",
+                content: import.meta.env["VITE_GOOGLE_SITE_VERIFICATION"],
+              },
+            ]
+          : []),
+      ],
+      links: [
+        ...seo.links,
+        {
+          rel: "stylesheet",
+          href: appCss,
+        },
+        { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
+        { rel: "stylesheet", href: "/fonts/fonts.css" },
+      ],
+    };
+  },
   shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
@@ -153,6 +162,20 @@ function RootShell({ children }: { children: ReactNode }) {
         <HeadContent />
       </head>
       <body>
+        <JsonLd
+          data={{
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "@id": `${SITE_ORIGIN}/#organization`,
+            name: BRAND.name,
+            alternateName: "Нуар Ателье",
+            url: SITE_ORIGIN,
+            logo: `${SITE_ORIGIN}/favicon.svg`,
+            email: CONTACT.email,
+            telephone: CONTACT.phone,
+            areaServed: BRAND.country,
+          }}
+        />
         {children}
         <Scripts />
       </body>
@@ -168,6 +191,7 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <Analytics />
       <UIProvider>
         <CatalogProvider data={catalog}>
           <AccountProvider>

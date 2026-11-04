@@ -4,15 +4,6 @@ import { Breadcrumbs } from "@/components/site/Breadcrumbs";
 import { ctaStyles } from "@/components/site/Blocks";
 
 export const Route = createFileRoute("/delivery")({
-  head: () => ({
-    meta: [
-      { title: "Доставка и получение — NOIR ATELIER" },
-      {
-        name: "description",
-        content: "Как выбрать доставку СДЭК, узнать её стоимость и получить заказ NOIR ATELIER.",
-      },
-    ],
-  }),
   component: DeliveryPage,
 });
 

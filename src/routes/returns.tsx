@@ -4,15 +4,6 @@ import { Breadcrumbs } from "@/components/site/Breadcrumbs";
 import { CONTACT } from "@/lib/brand";
 
 export const Route = createFileRoute("/returns")({
-  head: () => ({
-    meta: [
-      { title: "Возврат товара — NOIR ATELIER" },
-      {
-        name: "description",
-        content: "Сроки, порядок обращения и адрес для возврата заказа NOIR ATELIER.",
-      },
-    ],
-  }),
   component: ReturnsPage,
 });
 

@@ -161,11 +161,16 @@ export async function getPublicCatalog(): Promise<CatalogSnapshot> {
       ])
     : [[], [], [], [], [], [], []];
 
+  // A public card without an enabled variant cannot be opened or ordered.
+  const publicProductRows = productRows.filter(({ product }) =>
+    variantRows.some((variant) => variant.productId === product.id),
+  );
+
   return {
     collections: collectionRows.map(({ collection, cover }) => ({ ...collection, cover })),
     sizes: sizeRows.map(({ code, label }) => ({ code, label })),
     colors: colorRows.map(({ id, label, hex }) => ({ id, label, hex })),
-    products: productRows.map(({ product, collection }) => ({
+    products: publicProductRows.map(({ product, collection }) => ({
       id: product.id,
       slug: product.slug,
       sku: product.sku,

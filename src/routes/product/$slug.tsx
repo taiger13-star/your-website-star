@@ -1,5 +1,8 @@
 import { useMemo, useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { JsonLd } from "@/components/site/JsonLd";
+import { productSchema } from "@/lib/seo";
+import { trackGoal } from "@/lib/analytics";
 import { toast } from "sonner";
 
 import { DimensionOverlay, ScaleReference } from "@/components/product/DimensionOverlay";
@@ -12,7 +15,15 @@ import { useCatalog } from "@/store/catalog";
 import { useCart } from "@/store/cart";
 import { useShopUI } from "@/store/ui";
 
-export const Route = createFileRoute("/product/$slug")({ component: ProductPage });
+export const Route = createFileRoute("/product/$slug")({
+  loader: async ({ params, parentMatchPromise }) => {
+    const parent = await parentMatchPromise;
+    if (!parent.loaderData?.products.some((p) => p.slug === params.slug && p.variants.length))
+      throw notFound();
+  },
+  remountDeps: ({ params }) => params.slug,
+  component: ProductPage,
+});
 
 function ProductPage() {
   const { slug } = Route.useParams();
@@ -64,16 +75,26 @@ function ProductPage() {
       qty: 1,
       unitPrice: variant.price,
     });
+    trackGoal("add_to_cart", {
+      product_id: product.id,
+      value: variant.price,
+      currency: "RUB",
+      quantity: 1,
+    });
     toast.success("Товар добавлен в корзину");
     openCart();
   };
 
   return (
     <div className="container-page py-10 md:py-14">
+      <JsonLd data={productSchema(product, variant)} />
       <Breadcrumbs
         items={[
           { label: "Главная", to: "/" },
           { label: "Каталог", to: "/catalog" },
+          ...(product.collectionSlug
+            ? [{ label: product.collectionName, to: `/collections/${product.collectionSlug}` }]
+            : []),
           { label: product.name },
         ]}
       />
@@ -83,6 +104,10 @@ function ProductPage() {
             <img
               src={product.images[imageIndex] ?? product.images[0] ?? "/favicon.svg"}
               alt={`${product.name} — фото ${imageIndex + 1}`}
+              width={1024}
+              height={1280}
+              fetchPriority="high"
+              decoding="async"
               className="h-full w-full object-cover"
             />
             <DimensionOverlay sizeCode={variant.sizeLabel} measurements={variant.measurements} />

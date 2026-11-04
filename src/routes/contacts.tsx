@@ -4,15 +4,6 @@ import { Breadcrumbs } from "@/components/site/Breadcrumbs";
 import { CONTACT } from "@/lib/brand";
 
 export const Route = createFileRoute("/contacts")({
-  head: () => ({
-    meta: [
-      { title: "Контакты — NOIR ATELIER" },
-      {
-        name: "description",
-        content: "Телефон, почта и реквизиты NOIR ATELIER для вопросов по заказам и проектам.",
-      },
-    ],
-  }),
   component: ContactsPage,
 });
 

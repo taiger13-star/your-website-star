@@ -33,6 +33,7 @@ import { Route as SmartRouteImport } from './routes/smart'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as VerifyEmailRouteImport } from './routes/verify-email'
 import { Route as WishlistRouteImport } from './routes/wishlist'
+import { Route as CollectionsSlugRouteImport } from './routes/collections.$slug'
 import { Route as OrderOrderIdRouteImport } from './routes/order/$orderId'
 import { Route as ProductSlugRouteImport } from './routes/product/$slug'
 import { Route as AdminTokenIndexRouteImport } from './routes/admin/$token/index'
@@ -157,6 +158,11 @@ const WishlistRoute = WishlistRouteImport.update({
   path: '/wishlist',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CollectionsSlugRoute = CollectionsSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => CollectionsRoute,
+} as any)
 const OrderOrderIdRoute = OrderOrderIdRouteImport.update({
   id: '/order/$orderId',
   path: '/order/$orderId',
@@ -183,7 +189,7 @@ export interface FileRoutesByFullPath {
   '/cart': typeof CartRoute
   '/catalog': typeof CatalogRoute
   '/checkout': typeof CheckoutRoute
-  '/collections': typeof CollectionsRoute
+  '/collections': typeof CollectionsRouteWithChildren
   '/configurator': typeof ConfiguratorRoute
   '/contacts': typeof ContactsRoute
   '/data': typeof DataRoute
@@ -198,6 +204,7 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/verify-email': typeof VerifyEmailRoute
   '/wishlist': typeof WishlistRoute
+  '/collections/$slug': typeof CollectionsSlugRoute
   '/order/$orderId': typeof OrderOrderIdRoute
   '/product/$slug': typeof ProductSlugRoute
   '/admin/$token/': typeof AdminTokenIndexRoute
@@ -212,7 +219,7 @@ export interface FileRoutesByTo {
   '/cart': typeof CartRoute
   '/catalog': typeof CatalogRoute
   '/checkout': typeof CheckoutRoute
-  '/collections': typeof CollectionsRoute
+  '/collections': typeof CollectionsRouteWithChildren
   '/configurator': typeof ConfiguratorRoute
   '/contacts': typeof ContactsRoute
   '/data': typeof DataRoute
@@ -227,6 +234,7 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/verify-email': typeof VerifyEmailRoute
   '/wishlist': typeof WishlistRoute
+  '/collections/$slug': typeof CollectionsSlugRoute
   '/order/$orderId': typeof OrderOrderIdRoute
   '/product/$slug': typeof ProductSlugRoute
   '/admin/$token': typeof AdminTokenIndexRoute
@@ -242,7 +250,7 @@ export interface FileRoutesById {
   '/cart': typeof CartRoute
   '/catalog': typeof CatalogRoute
   '/checkout': typeof CheckoutRoute
-  '/collections': typeof CollectionsRoute
+  '/collections': typeof CollectionsRouteWithChildren
   '/configurator': typeof ConfiguratorRoute
   '/contacts': typeof ContactsRoute
   '/data': typeof DataRoute
@@ -257,6 +265,7 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/verify-email': typeof VerifyEmailRoute
   '/wishlist': typeof WishlistRoute
+  '/collections/$slug': typeof CollectionsSlugRoute
   '/order/$orderId': typeof OrderOrderIdRoute
   '/product/$slug': typeof ProductSlugRoute
   '/admin/$token/': typeof AdminTokenIndexRoute
@@ -288,6 +297,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/verify-email'
     | '/wishlist'
+    | '/collections/$slug'
     | '/order/$orderId'
     | '/product/$slug'
     | '/admin/$token/'
@@ -317,6 +327,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/verify-email'
     | '/wishlist'
+    | '/collections/$slug'
     | '/order/$orderId'
     | '/product/$slug'
     | '/admin/$token'
@@ -346,6 +357,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/verify-email'
     | '/wishlist'
+    | '/collections/$slug'
     | '/order/$orderId'
     | '/product/$slug'
     | '/admin/$token/'
@@ -361,7 +373,7 @@ export interface RootRouteChildren {
   CartRoute: typeof CartRoute
   CatalogRoute: typeof CatalogRoute
   CheckoutRoute: typeof CheckoutRoute
-  CollectionsRoute: typeof CollectionsRoute
+  CollectionsRoute: typeof CollectionsRouteWithChildren
   ConfiguratorRoute: typeof ConfiguratorRoute
   ContactsRoute: typeof ContactsRoute
   DataRoute: typeof DataRoute
@@ -551,6 +563,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WishlistRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/collections/$slug': {
+      id: '/collections/$slug'
+      path: '/$slug'
+      fullPath: '/collections/$slug'
+      preLoaderRoute: typeof CollectionsSlugRouteImport
+      parentRoute: typeof CollectionsRoute
+    }
     '/order/$orderId': {
       id: '/order/$orderId'
       path: '/order/$orderId'
@@ -575,6 +594,18 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface CollectionsRouteChildren {
+  CollectionsSlugRoute: typeof CollectionsSlugRoute
+}
+
+const CollectionsRouteChildren: CollectionsRouteChildren = {
+  CollectionsSlugRoute: CollectionsSlugRoute,
+}
+
+const CollectionsRouteWithChildren = CollectionsRoute._addFileChildren(
+  CollectionsRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   R3dDesignRoute: R3dDesignRoute,
@@ -585,7 +616,7 @@ const rootRouteChildren: RootRouteChildren = {
   CartRoute: CartRoute,
   CatalogRoute: CatalogRoute,
   CheckoutRoute: CheckoutRoute,
-  CollectionsRoute: CollectionsRoute,
+  CollectionsRoute: CollectionsRouteWithChildren,
   ConfiguratorRoute: ConfiguratorRoute,
   ContactsRoute: ContactsRoute,
   DataRoute: DataRoute,

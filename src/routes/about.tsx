@@ -5,16 +5,6 @@ import { Breadcrumbs } from "@/components/site/Breadcrumbs";
 import { ctaStyles } from "@/components/site/Blocks";
 
 export const Route = createFileRoute("/about")({
-  head: () => ({
-    meta: [
-      { title: "О бренде — NOIR ATELIER" },
-      {
-        name: "description",
-        content:
-          "NOIR ATELIER — предметы интерьера, созданные через цифровое моделирование и аддитивное производство.",
-      },
-    ],
-  }),
   component: AboutPage,
 });
 

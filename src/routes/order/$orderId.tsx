@@ -1,3 +1,4 @@
+import { trackVerifiedPurchase } from "@/lib/analytics";
 import { useEffect, useState } from "react";
 import { createFileRoute, Link, redirect, useRouter } from "@tanstack/react-router";
 import { toast } from "sonner";
@@ -23,6 +24,9 @@ function OrderPage() {
   const [pending, setPending] = useState(false);
   const productPayment = order.payments.find((payment) => payment.component === "product");
   const deliveryPayment = order.payments.find((payment) => payment.component === "delivery");
+  useEffect(() => {
+    trackVerifiedPurchase(productPayment, { id: order.id, subtotal: order.total });
+  }, [productPayment, order.id, order.total]);
   const cartSignature = cartItems
     .map((item) => `${item.productId}:${item.variantId}:${item.qty}`)
     .join("|");

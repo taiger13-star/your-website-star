@@ -7,31 +7,11 @@ import smartDetail from "@/assets/smart-detail.jpg";
 import atelierImg from "@/assets/atelier.jpg";
 import businessImg from "@/assets/business.jpg";
 import { BRAND, TESTIMONIALS } from "@/lib/brand";
-import { JsonLd } from "@/components/site/JsonLd";
 import { ProductCard } from "@/components/product/ProductCard";
 import { ctaGhostStyles, ctaStyles } from "@/components/site/Blocks";
 import { useCatalog } from "@/store/catalog";
 
 export const Route = createFileRoute("/")({
-  head: () => ({
-    meta: [
-      {
-        title: `${BRAND.name} — дизайнерские 3D-печатные кашпо и предметы интерьера`,
-      },
-      {
-        name: "description",
-        content:
-          "NOIR ATELIER — дизайнерские кашпо, вазы и объекты для интерьера, напечатанные в России под заказ. Коллекции NOIR Essential, Flow, Soft, Architecture, NOIR SMART и лимитированные серии.",
-      },
-      { property: "og:title", content: `${BRAND.name} — ${BRAND.valuesRu}` },
-      {
-        property: "og:description",
-        content: "Дизайнерские кашпо и предметы интерьера, напечатанные в России под заказ.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-  }),
   component: IndexPage,
 });
 
@@ -40,17 +20,6 @@ function IndexPage() {
   const bestsellers = products.filter((product) => product.isBestseller);
   return (
     <>
-      <JsonLd
-        data={{
-          "@context": "https://schema.org",
-          "@type": "Organization",
-          name: BRAND.name,
-          slogan: BRAND.tagline,
-          description: BRAND.heroLine,
-          areaServed: BRAND.country,
-        }}
-      />
-
       {/* HERO */}
       <section className="container-page pt-10 pb-16 md:pt-16 md:pb-24">
         <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_1fr] lg:gap-16">
@@ -93,6 +62,8 @@ function IndexPage() {
             <div className="overflow-hidden bg-secondary">
               <img
                 src={heroImg}
+                fetchPriority="high"
+                decoding="async"
                 alt="Дизайнерские кашпо NOIR ATELIER на поверхности из натурального камня в светлом интерьере"
                 width={1108}
                 height={1408}
@@ -160,8 +131,8 @@ function IndexPage() {
             {collections.map((collection, index) => (
               <Link
                 key={collection.id}
-                to="/catalog"
-                search={{ collection: collection.slug }}
+                to="/collections/$slug"
+                params={{ slug: collection.slug }}
                 className={`group relative overflow-hidden bg-background ${
                   index === 0 ? "sm:col-span-2 lg:col-span-1 lg:row-span-2" : ""
                 }`}
@@ -210,7 +181,7 @@ function IndexPage() {
             <div className="overflow-hidden">
               <img
                 src={smartDetail}
-                alt="Вертикальное прозрачное окно кашпо NOIR SMART с отметками уровня воды"
+                alt="Иллюстрация системы автополива NOIR SMART"
                 loading="lazy"
                 width={1408}
                 height={1008}
@@ -221,9 +192,9 @@ function IndexPage() {
               <p className="label-caps text-sand">NOIR SMART</p>
               <h2 className="display-md mt-4 text-sand">Кашпо, которое заботится о растении</h2>
               <p className="mt-6 max-w-xl text-sm leading-relaxed text-sand/75">
-                Двойной корпус, резервуар около литра воды, верхняя сервисная зона долива и
-                вертикальное окно уровня с отметками MAX и MIN. Капиллярная система подаёт воду
-                ровно в нужном объёме — без фитилей и без электричества.
+                Резервуар для воды, верхняя заливная горловина и поплавковый индикатор сверху. Вода
+                поступает к субстрату капиллярно через опоры с грунтом — без фитилей и
+                электричества. Объём резервуара зависит от выбранной модели и размера.
               </p>
               <Link
                 to="/smart"

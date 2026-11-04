@@ -1,3 +1,4 @@
+import { trackGoal } from "@/lib/analytics";
 import { useRef, useState, type FormEvent, type InputHTMLAttributes, type Ref } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, Check, FileUp, Lightbulb, PencilRuler, Printer, X } from "lucide-react";
@@ -8,16 +9,6 @@ import { createCustomPrintInquiryFn } from "@/lib/custom-print-functions";
 import { CONTACT_PHONE_ERROR, normalizeContactPhone } from "@/lib/contact-phone";
 
 export const Route = createFileRoute("/3d-design")({
-  head: () => ({
-    meta: [
-      { title: "Разработка изделия с нуля — NOIR ATELIER" },
-      {
-        name: "description",
-        content:
-          "Разработаем 3D-изделие по вашей идее, эскизу, фотографии или образцу: обсудим задачу, согласуем модель и изготовим прототип или готовое изделие.",
-      },
-    ],
-  }),
   component: DesignPage,
 });
 
@@ -87,6 +78,7 @@ function DesignPage() {
     try {
       await createCustomPrintInquiryFn({ data: form });
       setSubmitted(true);
+      trackGoal("generate_lead", { form: "3d-design" });
       toast.success("Заявка отправлена");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Не удалось отправить заявку.");

@@ -1,3 +1,4 @@
+import { trackGoal } from "@/lib/analytics";
 import { useState, type FormEvent, type InputHTMLAttributes } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Check } from "lucide-react";
@@ -8,16 +9,6 @@ import { Breadcrumbs } from "@/components/site/Breadcrumbs";
 import { createProjectInquiryFn } from "@/lib/server-functions";
 
 export const Route = createFileRoute("/business")({
-  head: () => ({
-    meta: [
-      { title: "Для бизнеса — NOIR ATELIER" },
-      {
-        name: "description",
-        content:
-          "B2B-проекты NOIR ATELIER: кастомные размеры, фирменные цвета, серии, прототипы и предметы под проект.",
-      },
-    ],
-  }),
   component: BusinessPage,
 });
 
@@ -54,6 +45,7 @@ function BusinessPage() {
         },
       });
       setSubmitted(true);
+      trackGoal("generate_lead", { form: "business" });
       toast.success("Запрос отправлен");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Не удалось отправить запрос");
