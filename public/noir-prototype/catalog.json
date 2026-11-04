@@ -1,0 +1,24 @@
+{
+  "price_kind":"demonstration_only_not_a_quote",
+  "currency":"RUB",
+  "rounding_rubles":50,
+  "collections":{
+    "DUNE":{"base_price":4200,"description":"Мягкий ритм рельефа. Спокойная форма, которую хочется рассматривать вблизи."},
+    "ARCH":{"base_price":4600,"description":"Архитектурный ритм и плавные арки. Маленький объект с выразительным характером."},
+    "FACET":{"base_price":4900,"description":"Свет раскрывает геометрию. Скульптурные грани меняют впечатление с каждым ракурсом."},
+    "FLOW":{"base_price":4700,"description":"Направление и движение. Текучий рельеф объединяет строгую форму и мягкую линию."}
+  },
+  "sizes":{
+    "S":{"factor_percent":75,"diameter":140,"height":150},
+    "M":{"factor_percent":100,"diameter":182,"height":190},
+    "L":{"factor_percent":145,"diameter":240,"height":250}
+  },
+  "materials":{"PLA":100,"PETG":112,"PETG HF":118,"TPU":145},
+  "colors":{
+    "ivory":{"label":"Ivory / слоновая кость","hex":"#e5dfd1"},
+    "graphite":{"label":"Graphite / графит","hex":"#333832"},
+    "olive":{"label":"Olive / олива","hex":"#66715e"},
+    "terracotta":{"label":"Terracotta / терракота","hex":"#b67457"},
+    "petrol":{"label":"Petrol / петроль","hex":"#34575b"}
+  }
+}

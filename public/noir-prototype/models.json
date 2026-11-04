@@ -1,0 +1,167 @@
+{
+  "format": "float32 positions/normals + uint32 indices, little endian",
+  "display_only": true,
+  "source_files_modified": false,
+  "collections": {
+    "DUNE": {
+      "source_file": "DUNE_SIGNATURE.3mf",
+      "source_sha256": "6d0c613413be432a5a0f0eb885f1b19203cc10a4d5dbee264212aae459e4960a",
+      "source_unchanged": true,
+      "source_dimensions_mm": [
+        182.0,
+        182.0,
+        193.9
+      ],
+      "mesh_parts": [
+        {
+          "file": "assets/dune-0.bin",
+          "role": "body",
+          "vertices": 247213,
+          "indices": 1483314,
+          "display_triangles": 494438,
+          "source_triangles": 495328,
+          "sha256": "273193497e7e408a3e772ea8dd5583bbd4f4376ffdbb7c1c48267b6efbaeea8c"
+        },
+        {
+          "file": "assets/dune-1.bin",
+          "role": "decor",
+          "vertices": 59295,
+          "indices": 355782,
+          "display_triangles": 118594,
+          "source_triangles": 118618,
+          "sha256": "35a3393a8c8d7290b04d4c8d3f76ffe7bd16ee4c465e356ead76dfb8e14ec39a"
+        },
+        {
+          "file": "assets/dune-2.bin",
+          "role": "brand",
+          "vertices": 7288,
+          "indices": 43644,
+          "display_triangles": 14548,
+          "source_triangles": 14560,
+          "sha256": "318b912154753cee21e2dc1076b90b348a8304d3c24b4beeb13711c35691ce57"
+        }
+      ],
+      "float_indicator": "Top indicator shown schematically, not an additional manufacturing part"
+    },
+    "ARCH": {
+      "source_file": "ARCH_SIGNATURE.3mf",
+      "source_sha256": "266dd48415ed58a022d0741477d7228b7f7ce2dd9c456850d45cab61c9d8ef94",
+      "source_unchanged": true,
+      "source_dimensions_mm": [
+        182.0,
+        182.0,
+        193.9
+      ],
+      "mesh_parts": [
+        {
+          "file": "assets/arch-0.bin",
+          "role": "body",
+          "vertices": 247213,
+          "indices": 1483314,
+          "display_triangles": 494438,
+          "source_triangles": 495328,
+          "sha256": "273193497e7e408a3e772ea8dd5583bbd4f4376ffdbb7c1c48267b6efbaeea8c"
+        },
+        {
+          "file": "assets/arch-1.bin",
+          "role": "decor",
+          "vertices": 39964,
+          "indices": 239640,
+          "display_triangles": 79880,
+          "source_triangles": 79880,
+          "sha256": "dc1b02b42a36a35f995a1490a77ce25fc5aa2f663742b49d73b97616efac9a31"
+        },
+        {
+          "file": "assets/arch-2.bin",
+          "role": "brand",
+          "vertices": 7288,
+          "indices": 43644,
+          "display_triangles": 14548,
+          "source_triangles": 14560,
+          "sha256": "318b912154753cee21e2dc1076b90b348a8304d3c24b4beeb13711c35691ce57"
+        }
+      ],
+      "float_indicator": "Top indicator shown schematically, not an additional manufacturing part"
+    },
+    "FACET": {
+      "source_file": "FACET_SIGNATURE.3mf",
+      "source_sha256": "2d3857e6c51fa54c551b8d75977587bf9ede9073e0eca04d9c258fc7417f2480",
+      "source_unchanged": true,
+      "source_dimensions_mm": [
+        182.0,
+        182.0,
+        193.9
+      ],
+      "mesh_parts": [
+        {
+          "file": "assets/facet-0.bin",
+          "role": "body",
+          "vertices": 247213,
+          "indices": 1483314,
+          "display_triangles": 494438,
+          "source_triangles": 495328,
+          "sha256": "d4e5db3b15e2efd78c165ed992d32bc7356e3840136e98fe370933cc5a13dd26"
+        },
+        {
+          "file": "assets/facet-1.bin",
+          "role": "decor",
+          "vertices": 136983,
+          "indices": 821616,
+          "display_triangles": 273872,
+          "source_triangles": 274018,
+          "sha256": "544fa626ee20d82eb0774e428929d9856bf0b70a93f2685e0911d6b0e2ffc560"
+        },
+        {
+          "file": "assets/facet-2.bin",
+          "role": "brand",
+          "vertices": 7288,
+          "indices": 43644,
+          "display_triangles": 14548,
+          "source_triangles": 14560,
+          "sha256": "318b912154753cee21e2dc1076b90b348a8304d3c24b4beeb13711c35691ce57"
+        }
+      ],
+      "float_indicator": "Top indicator shown schematically, not an additional manufacturing part"
+    },
+    "FLOW": {
+      "source_file": "FLOW_SIGNATURE.3mf",
+      "source_sha256": "f60ce50a3607183fea5a88af60519e650422aaaaa55a2d9e8bbdab93d90d2d4b",
+      "source_unchanged": true,
+      "source_dimensions_mm": [
+        182.0,
+        182.0,
+        193.9
+      ],
+      "mesh_parts": [
+        {
+          "file": "assets/flow-0.bin",
+          "role": "body",
+          "vertices": 247213,
+          "indices": 1483314,
+          "display_triangles": 494438,
+          "source_triangles": 495328,
+          "sha256": "273193497e7e408a3e772ea8dd5583bbd4f4376ffdbb7c1c48267b6efbaeea8c"
+        },
+        {
+          "file": "assets/flow-1.bin",
+          "role": "decor",
+          "vertices": 91157,
+          "indices": 546738,
+          "display_triangles": 182246,
+          "source_triangles": 182258,
+          "sha256": "828bed376783aed61e90df2904bb1d11354f524d3f6d11104fd48a05f885a947"
+        },
+        {
+          "file": "assets/flow-2.bin",
+          "role": "brand",
+          "vertices": 7288,
+          "indices": 43644,
+          "display_triangles": 14548,
+          "source_triangles": 14560,
+          "sha256": "318b912154753cee21e2dc1076b90b348a8304d3c24b4beeb13711c35691ce57"
+        }
+      ],
+      "float_indicator": "Top indicator shown schematically, not an additional manufacturing part"
+    }
+  }
+}
