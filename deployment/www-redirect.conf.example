@@ -1,0 +1,20 @@
+# Add/merge only after inspecting nginx -T. Do NOT replace the working bare-domain vhost.
+# HTTP bare -> HTTPS bare already works. The current bare-only certificate stays untouched.
+server {
+    listen 80;
+    server_name www.noir-atelier.ru;
+    location /.well-known/acme-challenge/ {
+        root __VERIFIED_EXISTING_ACME_WEBROOT__;
+    }
+    location / { return 301 https://noir-atelier.ru$request_uri; }
+}
+
+# Enable only AFTER a trusted certificate covering www has actually been issued.
+# Prefer a separate www certificate/lineage, leaving the working bare certificate intact.
+server {
+    listen 443 ssl;
+    server_name www.noir-atelier.ru;
+    ssl_certificate __NEW_VERIFIED_WWW_FULLCHAIN__;
+    ssl_certificate_key __NEW_VERIFIED_WWW_PRIVATE_KEY_PATH__;
+    return 301 https://noir-atelier.ru$request_uri;
+}

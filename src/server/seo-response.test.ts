@@ -3,6 +3,24 @@ import { applyIndexingHeaders, seoEndpoint } from "./seo-response";
 import type { CatalogSnapshot } from "./catalog-service";
 
 describe("SEO HTTP responses", () => {
+  it("preserves streamed private download bytes and file headers without touching storage", async () => {
+    const bytes = new Uint8Array([0, 255, 3, 90, 13, 10]);
+    const response = applyIndexingHeaders(
+      new Request("http://localhost/_serverFn/download"),
+      new Response(bytes, {
+        headers: {
+          "content-type": "application/octet-stream",
+          "content-disposition": 'attachment; filename="model.stl"',
+          "set-cookie": "test-session=placeholder; HttpOnly",
+        },
+      }),
+    );
+    expect(new Uint8Array(await response.arrayBuffer())).toEqual(bytes);
+    expect(response.headers.get("content-type")).toBe("application/octet-stream");
+    expect(response.headers.get("content-disposition")).toContain("model.stl");
+    expect(response.headers.get("set-cookie")).toContain("HttpOnly");
+    expect(response.headers.get("cache-control")).toBe("private, no-store");
+  });
   it("rebuilds sitemap from the current catalog and propagates database failures", async () => {
     const catalog = { products: [], collections: [], sizes: [], colors: [] } as CatalogSnapshot;
     const load = vi.fn(async () => catalog);

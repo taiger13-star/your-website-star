@@ -41,6 +41,14 @@ export function ProductCard({
             className="h-full w-full object-cover hover-zoom-img"
           />
           <div className="absolute left-3 top-3 flex flex-col items-start gap-2">
+            {product.images[0] && product.imageNotes?.[product.images[0]] ? (
+              <span
+                className="bg-background/90 px-2 py-1 text-[10px] text-ink"
+                title={product.imageNotes[product.images[0]]}
+              >
+                Архивная визуализация
+              </span>
+            ) : null}
             {product.isNew ? <CardTag label="Новинка" /> : null}
             {product.isBestseller ? <CardTag label="Хит" /> : null}
             {product.isComingSoon ? <CardTag label="Скоро" /> : null}

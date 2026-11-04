@@ -25,8 +25,12 @@ function OrderPage() {
   const productPayment = order.payments.find((payment) => payment.component === "product");
   const deliveryPayment = order.payments.find((payment) => payment.component === "delivery");
   useEffect(() => {
-    trackVerifiedPurchase(productPayment, { id: order.id, subtotal: order.total });
-  }, [productPayment, order.id, order.total]);
+    trackVerifiedPurchase(productPayment, {
+      id: order.id,
+      total: order.total,
+      status: order.status,
+    });
+  }, [productPayment, order.id, order.total, order.status]);
   const cartSignature = cartItems
     .map((item) => `${item.productId}:${item.variantId}:${item.qty}`)
     .join("|");

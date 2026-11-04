@@ -1,6 +1,7 @@
 import { and, asc, desc, eq, inArray } from "drizzle-orm";
 
 import { getDb } from "./db";
+import { smartImageNotice, reviewedSmartCopy } from "@/lib/smart-media";
 import {
   collections,
   colors,
@@ -46,6 +47,8 @@ export type PublicProduct = {
   shortDescription: string;
   description: string;
   images: string[];
+  imageNotes?: Record<string, string>;
+  searchImages?: string[];
   colors: { id: string; label: string; hex: string }[];
   materials: string[];
   variants: {
@@ -135,6 +138,7 @@ export async function getPublicCatalog(): Promise<CatalogSnapshot> {
           .select({
             productId: productImages.productId,
             url: mediaAssets.publicUrl,
+            fileName: mediaAssets.fileName,
             sortOrder: productImages.sortOrder,
           })
           .from(productImages)
@@ -181,9 +185,21 @@ export async function getPublicCatalog(): Promise<CatalogSnapshot> {
       collectionTagline: collection?.tagline ?? "",
       category: product.category,
       form: product.form,
-      shortDescription: product.shortDescription,
-      description: product.description,
+      ...reviewedSmartCopy(product),
       images: imageRows.filter((row) => row.productId === product.id).map((row) => row.url),
+      searchImages: imageRows
+        .filter(
+          (row) =>
+            row.productId === product.id &&
+            !smartImageNotice(row.url, row.fileName) &&
+            !["interior.jpg", "texture.jpg", "palette.jpg"].includes(row.fileName.toLowerCase()),
+        )
+        .map((row) => row.url),
+      imageNotes: Object.fromEntries(
+        imageRows
+          .filter((row) => row.productId === product.id && smartImageNotice(row.url, row.fileName))
+          .map((row) => [row.url, smartImageNotice(row.url, row.fileName)!]),
+      ),
       colors: colorLinks.filter((row) => row.productId === product.id).map((row) => row.color),
       materials: materialLinks
         .filter((row) => row.productId === product.id)

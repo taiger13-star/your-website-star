@@ -2,7 +2,7 @@ import type { PublicProduct } from "@/server/catalog-service";
 
 export const SMART_COMPARISON_FEATURES = [
   { label: "Дизайн", standard: true, smart: true },
-  { label: "Съёмная посадочная вставка", standard: false, smart: true },
+  { label: "Съёмное второе дно", standard: false, smart: true },
   { label: "Резервуар", standard: false, smart: true },
   { label: "Верхний долив", standard: false, smart: true },
   { label: "Индикатор воды", standard: false, smart: true },

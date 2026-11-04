@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowDownToLine, Droplets, Gauge, Layers3, Sprout } from "lucide-react";
 
 import smartDetail from "@/assets/smart-detail.jpg";
+import { SMART_ARCHIVE_NOTICE } from "@/lib/smart-media";
 import { SmartComparison } from "@/components/product/SmartComparison";
 import { SmartCutaway } from "@/components/product/SmartCutaway";
 import { Breadcrumbs } from "@/components/site/Breadcrumbs";
@@ -16,8 +17,8 @@ export const Route = createFileRoute("/smart")({
 const features = [
   [
     Layers3,
-    "Съёмная вставка",
-    "Растение находится во внутренней посадочной ёмкости, которую удобно вынуть для ухода.",
+    "Съёмное второе дно",
+    "Второе дно с опорами снимается для обслуживания системы автополива.",
   ],
   [
     Droplets,
@@ -64,6 +65,9 @@ function SmartPage() {
               alt="Иллюстрация системы автополива NOIR SMART"
               className="h-full w-full object-cover"
             />
+            <figcaption className="p-3 text-xs leading-relaxed text-muted-foreground">
+              {SMART_ARCHIVE_NOTICE}
+            </figcaption>
           </figure>
         </div>
       </div>

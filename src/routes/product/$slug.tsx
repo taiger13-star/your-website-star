@@ -115,6 +115,11 @@ function ProductPage() {
               {displaySize(variant.sizeLabel, variant.measurements)}
             </div>
           </div>
+          {product.imageNotes?.[product.images[imageIndex] ?? product.images[0] ?? ""] ? (
+            <p className="mt-3 border-l border-taupe pl-3 text-xs leading-relaxed text-muted-foreground">
+              {product.imageNotes[product.images[imageIndex] ?? product.images[0] ?? ""]}
+            </p>
+          ) : null}
           {product.images.length > 1 ? (
             <div className="mt-3 grid grid-cols-4 gap-3">
               {product.images.map((image, index) => (

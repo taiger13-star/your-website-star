@@ -2,7 +2,7 @@ const steps = [
   ["01", "Залили воду", "Вода попадает в скрытую верхнюю горловину."],
   ["02", "Резервуар заполнен", "Запас воды остаётся ниже корневой системы."],
   ["03", "Влага поднимается", "Капиллярные каналы подают влагу к субстрату."],
-  ["04", "Уровень под контролем", "Поплавок и окно MIN/MAX подсказывают время долива."],
+  ["04", "Уровень под контролем", "Поплавковый индикатор сверху подсказывает время долива."],
 ] as const;
 
 export function SmartCutaway() {
@@ -27,8 +27,8 @@ export function SmartCutaway() {
             >
               <title id="smart-cutaway-title">Разрез кашпо NOIR SMART</title>
               <desc id="smart-cutaway-description">
-                Внешний корпус, внутренний стакан, резервуар, капиллярные каналы, заливная
-                горловина, поплавок и окно MIN MAX.
+                Посадочная камера, съёмное второе дно, резервуар, опоры с грунтом, заливная
+                горловина и вертикальный шток с верхним поплавковым индикатором. Бокового окна нет.
               </desc>
               <defs>
                 <linearGradient id="smart-water" x1="0" x2="0" y1="0" y2="1">
@@ -79,18 +79,35 @@ export function SmartCutaway() {
                 strokeLinecap="round"
               />
               <path
-                d="M412 126h28v160h-28z"
+                d="M420 88h32v345h-32z"
                 fill="var(--color-background)"
+                fillOpacity="0.7"
                 stroke="currentColor"
                 strokeWidth="1.5"
+                strokeDasharray="4 4"
               />
-              <path className="smart-float" d="M416 230h20v46h-20z" fill="var(--color-sage)" />
-              <text x="449" y="157" fontSize="12" fill="currentColor">
-                MAX
-              </text>
-              <text x="449" y="267" fontSize="12" fill="currentColor">
-                MIN
-              </text>
+              <g className="smart-float">
+                <path d="M436 65v315" stroke="currentColor" strokeWidth="4" />
+                <rect
+                  x="429"
+                  y="44"
+                  width="14"
+                  height="28"
+                  rx="7"
+                  fill="#9b3f39"
+                  stroke="currentColor"
+                />
+                <rect x="429" y="50" width="14" height="3" fill="var(--color-sand)" />
+                <rect
+                  x="423"
+                  y="375"
+                  width="26"
+                  height="35"
+                  rx="12"
+                  fill="var(--color-sage)"
+                  stroke="currentColor"
+                />
+              </g>
               <path
                 d="M375 72h44v82h-44z"
                 fill="var(--color-background)"
@@ -105,15 +122,7 @@ export function SmartCutaway() {
                 strokeLinecap="round"
               />
               <g className="fill-ink text-[13px]" fontFamily="Manrope, sans-serif" fontSize="13">
-                <Line
-                  x1="213"
-                  y1="130"
-                  x2="70"
-                  y2="85"
-                  label="Внутренняя посадочная вставка"
-                  x="18"
-                  y="76"
-                />
+                <Line x1="213" y1="130" x2="70" y2="85" label="Посадочная камера" x="18" y="76" />
                 <Line x1="172" y1="235" x2="70" y2="235" label="Внешний корпус" x="18" y="226" />
                 <Line x1="205" y1="395" x2="70" y2="430" label="Резервуар" x="18" y="421" />
                 <Line
@@ -126,20 +135,13 @@ export function SmartCutaway() {
                   y="321"
                 />
                 <Line x1="397" y1="87" x2="545" y2="73" label="Заливная горловина" x="550" y="67" />
-                <Line
-                  x1="440"
-                  y1="242"
-                  x2="545"
-                  y2="242"
-                  label="Окно MIN/MAX и поплавок"
-                  x="550"
-                  y="233"
-                />
+                <Line x1="440" y1="242" x2="545" y2="242" label="Канал поплавка" x="550" y="233" />
+                <Line x1="442" y1="52" x2="510" y2="25" label="Поплавок сверху" x="515" y="24" />
               </g>
             </svg>
             <figcaption className="mt-4 text-xs leading-relaxed text-muted-foreground">
-              Схема показывает принцип устройства; фактический объём резервуара зависит от выбранной
-              модели и размера.
+              Условная схема без масштаба показывает принцип устройства; фактический объём
+              резервуара зависит от выбранной модели и размера.
             </figcaption>
           </figure>
           <ol className="grid gap-3" aria-label="Как работает NOIR SMART">

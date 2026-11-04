@@ -133,7 +133,8 @@ export function pageHead(
     if (product) {
       title = `${product.name} — ${product.collectionName} | NOIR ATELIER`;
       description = `${product.shortDescription} Размер, цвет, исполнение и актуальная цена ${product.name} в каталоге NOIR ATELIER.`;
-      image = product.images[0];
+      image = (product.searchImages ??
+        product.images.filter((src) => !product.imageNotes?.[src]))[0];
     } else missing = true;
   }
   if (collectionSlug) {
@@ -173,13 +174,14 @@ export function pageHead(
 }
 
 export function productSchema(product: PublicProduct, variant: PublicProduct["variants"][number]) {
+  const images = product.searchImages ?? product.images.filter((src) => !product.imageNotes?.[src]);
   return {
     "@context": "https://schema.org",
     "@type": "Product",
     "@id": `${absoluteUrl(`/product/${product.slug}`)}#product`,
     name: product.name,
     description: product.description || product.shortDescription,
-    image: product.images.map((src) => new URL(src, SITE_ORIGIN).href),
+    ...(images.length ? { image: images.map((src) => new URL(src, SITE_ORIGIN).href) } : {}),
     sku: product.sku,
     brand: { "@type": "Brand", name: "NOIR ATELIER" },
     ...(product.materials.length ? { material: product.materials.join(", ") } : {}),

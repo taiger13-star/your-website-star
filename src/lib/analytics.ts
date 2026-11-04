@@ -23,23 +23,46 @@ export function counterId(value = import.meta.env["VITE_METRIKA_COUNTER_ID"]): n
 
 export function trackGoal(name: Goal, data: GoalData = {}) {
   const id = counterId();
-  if (!id || typeof window === "undefined") return;
+  if (!id || typeof window === "undefined" || !window.ym) return false;
   try {
-    window.ym?.(id, "reachGoal", name, data);
+    // Metrika uses order_price/price for goal revenue; value alone is a custom parameter.
+    window.ym(id, "reachGoal", name, {
+      ...data,
+      ...(data.value !== undefined ? { order_price: data.value } : {}),
+    });
+    return true;
   } catch {
     /* Analytics cannot break checkout. */
+    return false;
   }
 }
 
 export function trackVerifiedPurchase(
-  payment: { status: string; provider: string | null } | undefined,
-  order: { id: string; subtotal: number },
+  payment:
+    | {
+        component: string;
+        status: string;
+        provider: string | null;
+        amount: number;
+        currency: string;
+        paidAt: Date | string | null;
+      }
+    | undefined,
+  order: { id: string; total: number; status: string },
 ) {
   if (
     !payment ||
+    payment.component !== "product" ||
     payment.status !== "paid" ||
+    !payment.paidAt ||
+    !Number.isFinite(new Date(payment.paidAt).getTime()) ||
     !payment.provider ||
     payment.provider === "mock" ||
+    payment.currency !== "RUB" ||
+    !Number.isFinite(order.total) ||
+    order.total <= 0 ||
+    payment.amount !== order.total ||
+    order.status === "cancelled" ||
     !counterId() ||
     typeof window === "undefined"
   )
@@ -47,7 +70,8 @@ export function trackVerifiedPurchase(
   try {
     const key = `noir-analytics-purchase:${order.id}`;
     if (localStorage.getItem(key) || !window.ym) return false;
-    trackGoal("purchase", { order_id: order.id, value: order.subtotal, currency: "RUB" });
+    if (!trackGoal("purchase", { order_id: order.id, value: payment.amount, currency: "RUB" }))
+      return false;
     localStorage.setItem(key, "sent");
     return true;
   } catch {

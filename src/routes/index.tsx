@@ -10,6 +10,7 @@ import { BRAND, TESTIMONIALS } from "@/lib/brand";
 import { ProductCard } from "@/components/product/ProductCard";
 import { ctaGhostStyles, ctaStyles } from "@/components/site/Blocks";
 import { useCatalog } from "@/store/catalog";
+import { SMART_ARCHIVE_NOTICE } from "@/lib/smart-media";
 
 export const Route = createFileRoute("/")({
   component: IndexPage,
@@ -187,6 +188,7 @@ function IndexPage() {
                 height={1008}
                 className="h-full w-full object-cover"
               />
+              <p className="mt-3 text-xs leading-relaxed text-sand/75">{SMART_ARCHIVE_NOTICE}</p>
             </div>
             <div>
               <p className="label-caps text-sand">NOIR SMART</p>
