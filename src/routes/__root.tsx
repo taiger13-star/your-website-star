@@ -16,6 +16,7 @@ import { BRAND, CONTACT, NAV_LINKS } from "../lib/brand";
 import { pageHead, SITE_ORIGIN } from "../lib/seo";
 import { JsonLd } from "../components/site/JsonLd";
 import { Analytics } from "../components/site/Analytics";
+import { VisitRecorder } from "../components/site/VisitRecorder";
 import { Header } from "../components/site/Header";
 import { Footer } from "../components/site/Footer";
 import { CartDrawer } from "../components/site/CartDrawer";
@@ -192,6 +193,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <Analytics />
+      <VisitRecorder />
       <UIProvider>
         <CatalogProvider data={catalog}>
           <AccountProvider>
@@ -207,7 +209,7 @@ function RootComponent() {
                 <main id="main">
                   <Outlet />
                 </main>
-                <Footer />
+                {!isAdminRoute ? <Footer /> : null}
                 <CartDrawer />
                 <SearchOverlay />
                 <Toaster position="bottom-center" richColors={false} closeButton />

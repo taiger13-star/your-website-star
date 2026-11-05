@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { getAdminUsersFn } from "@/lib/account-functions";
 import { paymentStatusLabel } from "@/lib/order-payment";
 import { CustomPrintAdmin } from "@/components/admin/CustomPrintAdmin";
+import { AdminDashboard } from "@/components/admin/dashboard/AdminDashboard";
 
 import {
   deleteCollectionFn,
@@ -39,13 +40,21 @@ export const Route = createFileRoute("/admin/$token/")({
   component: AdminPage,
 });
 
-type Tab = "products" | "collections" | "references" | "media" | "orders" | "users" | "customPrint";
+type Tab =
+  | "dashboard"
+  | "products"
+  | "collections"
+  | "references"
+  | "media"
+  | "orders"
+  | "users"
+  | "customPrint";
 
 function AdminPage() {
   const state = Route.useLoaderData();
   const { token } = Route.useParams();
   const router = useRouter();
-  const [tab, setTab] = useState<Tab>("products");
+  const [tab, setTab] = useState<Tab>("dashboard");
   const refresh = () => void router.invalidate();
   if (!state.authenticated || !state.data) return <Login token={token} onDone={refresh} />;
   const data = state.data;
@@ -59,7 +68,7 @@ function AdminPage() {
         <div className="container-page flex items-center justify-between py-5">
           <div>
             <p className="label-caps text-taupe">NOIR ATELIER</p>
-            <h1 className="font-display text-2xl">Управление каталогом</h1>
+            <h1 className="font-display text-2xl">Управление студией</h1>
           </div>
           <button
             type="button"
@@ -74,6 +83,7 @@ function AdminPage() {
         <nav className="flex flex-wrap gap-2 border-b border-hairline pb-5">
           {(
             [
+              ["dashboard", "Обзор"],
               ["products", "Товары"],
               ["collections", "Коллекции"],
               ["references", "Цвета и материалы"],
@@ -93,6 +103,7 @@ function AdminPage() {
             </button>
           ))}
         </nav>
+        {tab === "dashboard" ? <AdminDashboard onNavigate={setTab} /> : null}
         {tab === "products" ? <Products data={data} refresh={refresh} /> : null}
         {tab === "collections" ? <Collections data={data} refresh={refresh} /> : null}
         {tab === "references" ? <References data={data} refresh={refresh} /> : null}

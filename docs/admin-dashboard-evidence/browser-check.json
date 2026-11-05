@@ -1,0 +1,19 @@
+{
+  "production_modified": false,
+  "real_local_postgres": true,
+  "production_build": true,
+  "fixture_data_labelled": true,
+  "checks": [
+    "Actual admin password login; anonymous data hidden; private noindex/no-store; no admin telemetry",
+    "All four calendar period buttons request real aggregates and display expected fixture order counts",
+    "An injected 503 marks cached metrics as stale instead of silently replacing them with zero; retry recovers",
+    "Chart toggle and CSV download work; export contains aggregates only",
+    "Existing product, collection and order management remain accessible; return to Overview works",
+    "Direct anonymous dashboard RPC rejects; wrong admin route returns 404",
+    "Desktop 1440×1100 and mobile 390×844; no horizontal overflow",
+    "Real public browser visit increases measured visitors by one; hidden tab stops heartbeat, visible tab resumes; private query omitted"
+  ],
+  "page_errors": [],
+  "external_requests": [],
+  "passed": true
+}

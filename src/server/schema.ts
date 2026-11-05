@@ -1,4 +1,5 @@
 import { relations } from "drizzle-orm";
+export { siteSessions, sitePageViews } from "./visit-schema";
 import {
   boolean,
   integer,

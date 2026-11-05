@@ -10,7 +10,7 @@ export function Analytics() {
   useEffect(() => {
     const id = counterId();
     // Preview runs must never pollute production reports, even with a production .env.
-    if (!id || window.location.origin !== SITE_ORIGIN) return;
+    if (!id || window.location.origin !== SITE_ORIGIN || isPrivatePath(path)) return;
     if (initialised !== id) {
       const existing = document.querySelector('script[src*="mc.yandex.ru/metrika/tag.js"]');
       if (!window.ym) {
