@@ -5,12 +5,40 @@
   "currency": "RUB",
   "created_at": "2026-11-04",
   "verified_in_account": true,
-  "live_code_installed": false,
+  "live_code_installed": true,
   "goals": [
-    { "event": "add_to_cart", "id": 678801346, "name": "Добавление в корзину", "condition": "exact" },
-    { "event": "begin_checkout", "id": 678801386, "name": "Начало оформления заказа", "condition": "exact" },
-    { "event": "order_created", "id": 678801387, "name": "Заказ сохранён", "condition": "exact" },
-    { "event": "generate_lead", "id": 678801389, "name": "Заявка сохранена", "condition": "exact" },
-    { "event": "purchase", "id": 678801390, "name": "Подтверждённая оплата товара", "condition": "exact" }
-  ]
+    {
+      "event": "add_to_cart",
+      "id": 678801346,
+      "name": "Добавление в корзину",
+      "condition": "exact"
+    },
+    {
+      "event": "begin_checkout",
+      "id": 678801386,
+      "name": "Начало оформления заказа",
+      "condition": "exact"
+    },
+    {
+      "event": "order_created",
+      "id": 678801387,
+      "name": "Заказ сохранён",
+      "condition": "exact"
+    },
+    {
+      "event": "generate_lead",
+      "id": 678801389,
+      "name": "Заявка сохранена",
+      "condition": "exact"
+    },
+    {
+      "event": "purchase",
+      "id": 678801390,
+      "name": "Подтверждённая оплата товара",
+      "condition": "exact"
+    }
+  ],
+  "live_verified_on": "2026-11-05",
+  "collector_http200_verified": true,
+  "dashboard_visit_count_verified": false
 }

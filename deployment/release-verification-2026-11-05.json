@@ -1,0 +1,189 @@
+{
+  "date_moscow": "2026-11-05",
+  "status": "LIVE_VERIFIED",
+  "site": "https://noir-atelier.ru/",
+  "repository": "https://github.com/taiger13-star/your-website-star",
+  "branch": "seo/noir-atelier-2026-11-04",
+  "runtime_source_commit": "e601d7c70084dd0e419de19be4df9ac6f9032eee",
+  "runtime_release_directory": "/opt/noir-atelier-releases/seo-20261104-ad386e0",
+  "live_upstream": "127.0.0.1:3101",
+  "vps_checks": {
+    "unit_tests_passed": 35,
+    "production_db_integration_tests_skipped": 17,
+    "typescript": "passed",
+    "lint": "passed",
+    "build": "passed",
+    "no_migrations_or_seed": true
+  },
+  "public_checks": {
+    "sitemap_canonical_http200_urls": 38,
+    "true_404_paths": 3,
+    "protocol_domain_path_checks": 8,
+    "image_responses_checked": 16,
+    "browser_functional_checks": 19,
+    "smart_browser_checks": 5,
+    "complete_desktop_mobile_captures": 12,
+    "runtime_page_errors": 0,
+    "application_form_posts": 0
+  },
+  "fully_loaded_image_checks": [
+    {
+      "viewport": "desktop",
+      "path": "/",
+      "status": 200,
+      "all_images_loaded": true,
+      "images": 14
+    },
+    {
+      "viewport": "desktop",
+      "path": "/catalog",
+      "status": 200,
+      "all_images_loaded": true,
+      "images": 21
+    },
+    {
+      "viewport": "desktop",
+      "path": "/collections/flow",
+      "status": 200,
+      "all_images_loaded": true,
+      "images": 4
+    },
+    {
+      "viewport": "desktop",
+      "path": "/product/noir-flow-01",
+      "status": 200,
+      "all_images_loaded": true,
+      "images": 4
+    },
+    {
+      "viewport": "desktop",
+      "path": "/configurator",
+      "status": 200,
+      "all_images_loaded": true,
+      "images": 0
+    },
+    {
+      "viewport": "desktop",
+      "path": "/3d-design",
+      "status": 200,
+      "all_images_loaded": true,
+      "images": 0
+    },
+    {
+      "viewport": "mobile",
+      "path": "/",
+      "status": 200,
+      "all_images_loaded": true,
+      "images": 14
+    },
+    {
+      "viewport": "mobile",
+      "path": "/catalog",
+      "status": 200,
+      "all_images_loaded": true,
+      "images": 21
+    },
+    {
+      "viewport": "mobile",
+      "path": "/collections/flow",
+      "status": 200,
+      "all_images_loaded": true,
+      "images": 4
+    },
+    {
+      "viewport": "mobile",
+      "path": "/product/noir-flow-01",
+      "status": 200,
+      "all_images_loaded": true,
+      "images": 4
+    },
+    {
+      "viewport": "mobile",
+      "path": "/configurator",
+      "status": 200,
+      "all_images_loaded": true,
+      "images": 0
+    },
+    {
+      "viewport": "mobile",
+      "path": "/3d-design",
+      "status": 200,
+      "all_images_loaded": true,
+      "images": 0
+    }
+  ],
+  "tls": {
+    "www_trusted_https": true,
+    "www_redirect_retains_path_query": true,
+    "separate_certificate": "noir-atelier-www-seo-20261104",
+    "www_renewal_dry_run": "passed",
+    "original_certificate_retained": true,
+    "certbot_timer_present": true
+  },
+  "metrika": {
+    "counter_id": 114077852,
+    "runtime_ids": [
+      114077852
+    ],
+    "sdk_http_status": 200,
+    "collector_http200_received": true,
+    "configured_goals": 5,
+    "dashboard_visit_count_verified": false,
+    "test_purchase_events_generated": false
+  },
+  "backup": {
+    "server_directory": "/opt/noir-atelier-backups/seo-20261104T203536Z-e601d7c",
+    "pre_switch_nginx_backup": "/opt/noir-atelier-backups/seo-20261104T203536Z-e601d7c/before-final-20261105T054004Z",
+    "local_archive_sha256": "3d2fd7454a47598f46b601f2125c31236696c3d0e43350326f55dbfa6e6e9874",
+    "full_vps_or_database_backup": false
+  },
+  "services": {
+    "noir-atelier-seo.service": {
+      "ActiveState": "active",
+      "UnitFileState": "enabled",
+      "MainPID": "105928",
+      "MemoryCurrent": "94584832"
+    },
+    "noir-atelier.service": {
+      "ActiveState": "active",
+      "UnitFileState": "enabled",
+      "MainPID": "1643",
+      "MemoryCurrent": "189964288"
+    }
+  },
+  "changed_nginx_paths": [
+    "/etc/nginx/sites-available/noir-atelier",
+    "/etc/nginx/sites-available/noir-atelier-www-seo",
+    "/etc/nginx/sites-enabled/noir-atelier-www-seo"
+  ],
+  "yandex_verification_file_preserved": true,
+  "ssh_publication_session_closed": true,
+  "secrets_included": false,
+  "performance": {
+    "field_core_web_vitals_verified": false,
+    "home_navigation_samples": [
+      {
+        "viewport": "desktop",
+        "server_response_after_request_ms": 33.4,
+        "before_dns_delay_ms": 18969.7,
+        "response_end_ms": 19022.3
+      },
+      {
+        "viewport": "mobile",
+        "server_response_after_request_ms": 30.1,
+        "before_dns_delay_ms": 0.0,
+        "response_end_ms": 33.9
+      }
+    ],
+    "cold_browser_network_samples_unstable": true,
+    "note": "The cold desktop sample waited before DNS; timings after scripted scrolling are not field LCP. No Lighthouse or ranking score is claimed."
+  },
+  "limits": [
+    "No production order, payment, email or CDEK shipment was submitted.",
+    "Product payment is still mock; purchase goal requires confirmed non-mock product payment.",
+    "Search Console ownership remains to be confirmed by the owner.",
+    "Archived SMART pictures remain visibly labelled until current SKU photos are supplied.",
+    "Collector acceptance was verified; dashboard visit count was not read.",
+    "Field performance needs real-user data; initial browser connection samples were unstable."
+  ]
+}
