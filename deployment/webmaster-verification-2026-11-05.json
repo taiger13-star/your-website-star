@@ -1,0 +1,260 @@
+{
+  "recorded_at_utc": "2026-11-05T06:43:43.054652+00:00",
+  "site": "https://noir-atelier.ru/",
+  "recommendation": {
+    "text": "Главный адрес сайта не использует HTTPS-протокол",
+    "known_since": "2026-10-20",
+    "resource": "http://noir-atelier.ru/",
+    "cleared": false
+  },
+  "completed_actions": [
+    {
+      "action": "Added HTTPS resource",
+      "url": "https://noir-atelier.ru/",
+      "verified_role": "owner",
+      "verification_date": "2026-11-05",
+      "method": "existing publicly served HTML verification file"
+    },
+    {
+      "action": "Checked site list after verification",
+      "resources_count": 2,
+      "resources": [
+        "http://noir-atelier.ru/",
+        "https://noir-atelier.ru/"
+      ]
+    }
+  ],
+  "public_checks": {
+    "checked_at_utc": "2026-11-05T06:40:00.932751+00:00",
+    "read_only": true,
+    "tls_validation": true,
+    "checks": [
+      {
+        "type": "protocol_and_canonical",
+        "input": "http://noir-atelier.ru/",
+        "chain": [
+          {
+            "url": "http://noir-atelier.ru/",
+            "status": 301,
+            "location": "https://noir-atelier.ru/"
+          },
+          {
+            "url": "https://noir-atelier.ru/",
+            "status": 200,
+            "location": null
+          }
+        ],
+        "canonical": [
+          "https://noir-atelier.ru/"
+        ],
+        "robots": [
+          "index, follow, max-image-preview:large"
+        ],
+        "passed": true
+      },
+      {
+        "type": "protocol_and_canonical",
+        "input": "http://noir-atelier.ru/catalog?utm_source=webmaster-https-check",
+        "chain": [
+          {
+            "url": "http://noir-atelier.ru/catalog?utm_source=webmaster-https-check",
+            "status": 301,
+            "location": "https://noir-atelier.ru/catalog?utm_source=webmaster-https-check"
+          },
+          {
+            "url": "https://noir-atelier.ru/catalog?utm_source=webmaster-https-check",
+            "status": 200,
+            "location": null
+          }
+        ],
+        "canonical": [
+          "https://noir-atelier.ru/catalog"
+        ],
+        "robots": [
+          "index, follow, max-image-preview:large"
+        ],
+        "passed": true
+      },
+      {
+        "type": "protocol_and_canonical",
+        "input": "https://noir-atelier.ru/",
+        "chain": [
+          {
+            "url": "https://noir-atelier.ru/",
+            "status": 200,
+            "location": null
+          }
+        ],
+        "canonical": [
+          "https://noir-atelier.ru/"
+        ],
+        "robots": [
+          "index, follow, max-image-preview:large"
+        ],
+        "passed": true
+      },
+      {
+        "type": "protocol_and_canonical",
+        "input": "https://noir-atelier.ru/catalog?utm_source=webmaster-https-check",
+        "chain": [
+          {
+            "url": "https://noir-atelier.ru/catalog?utm_source=webmaster-https-check",
+            "status": 200,
+            "location": null
+          }
+        ],
+        "canonical": [
+          "https://noir-atelier.ru/catalog"
+        ],
+        "robots": [
+          "index, follow, max-image-preview:large"
+        ],
+        "passed": true
+      },
+      {
+        "type": "protocol_and_canonical",
+        "input": "http://www.noir-atelier.ru/",
+        "chain": [
+          {
+            "url": "http://www.noir-atelier.ru/",
+            "status": 301,
+            "location": "https://noir-atelier.ru/"
+          },
+          {
+            "url": "https://noir-atelier.ru/",
+            "status": 200,
+            "location": null
+          }
+        ],
+        "canonical": [
+          "https://noir-atelier.ru/"
+        ],
+        "robots": [
+          "index, follow, max-image-preview:large"
+        ],
+        "passed": true
+      },
+      {
+        "type": "protocol_and_canonical",
+        "input": "http://www.noir-atelier.ru/catalog?utm_source=webmaster-https-check",
+        "chain": [
+          {
+            "url": "http://www.noir-atelier.ru/catalog?utm_source=webmaster-https-check",
+            "status": 301,
+            "location": "https://noir-atelier.ru/catalog?utm_source=webmaster-https-check"
+          },
+          {
+            "url": "https://noir-atelier.ru/catalog?utm_source=webmaster-https-check",
+            "status": 200,
+            "location": null
+          }
+        ],
+        "canonical": [
+          "https://noir-atelier.ru/catalog"
+        ],
+        "robots": [
+          "index, follow, max-image-preview:large"
+        ],
+        "passed": true
+      },
+      {
+        "type": "protocol_and_canonical",
+        "input": "https://www.noir-atelier.ru/",
+        "chain": [
+          {
+            "url": "https://www.noir-atelier.ru/",
+            "status": 301,
+            "location": "https://noir-atelier.ru/"
+          },
+          {
+            "url": "https://noir-atelier.ru/",
+            "status": 200,
+            "location": null
+          }
+        ],
+        "canonical": [
+          "https://noir-atelier.ru/"
+        ],
+        "robots": [
+          "index, follow, max-image-preview:large"
+        ],
+        "passed": true
+      },
+      {
+        "type": "protocol_and_canonical",
+        "input": "https://www.noir-atelier.ru/catalog?utm_source=webmaster-https-check",
+        "chain": [
+          {
+            "url": "https://www.noir-atelier.ru/catalog?utm_source=webmaster-https-check",
+            "status": 301,
+            "location": "https://noir-atelier.ru/catalog?utm_source=webmaster-https-check"
+          },
+          {
+            "url": "https://noir-atelier.ru/catalog?utm_source=webmaster-https-check",
+            "status": 200,
+            "location": null
+          }
+        ],
+        "canonical": [
+          "https://noir-atelier.ru/catalog"
+        ],
+        "robots": [
+          "index, follow, max-image-preview:large"
+        ],
+        "passed": true
+      },
+      {
+        "type": "sitemap",
+        "chain": [
+          {
+            "url": "https://noir-atelier.ru/sitemap.xml",
+            "status": 200,
+            "location": null
+          }
+        ],
+        "urls_count": 38,
+        "only_https_canonical_origin": true,
+        "passed": true
+      },
+      {
+        "type": "robots",
+        "chain": [
+          {
+            "url": "https://noir-atelier.ru/robots.txt",
+            "status": 200,
+            "location": null
+          }
+        ],
+        "declared_sitemaps": [
+          "https://noir-atelier.ru/sitemap.xml"
+        ],
+        "passed": true
+      },
+      {
+        "type": "existing_yandex_verification_file",
+        "status": 200,
+        "sha256": "9caa1c090a57e0ea796dde191aee742a70bf87b7fbf8aee954fadd4b2465300c",
+        "passed": true
+      }
+    ],
+    "passed": true
+  },
+  "migration": {
+    "target": "https://noir-atelier.ru/",
+    "add_https": true,
+    "add_www": false,
+    "save_button_enabled": false,
+    "submitted": false,
+    "service_message": "Инструмент «Переезд сайта» работает в режиме «Только для чтения». Наши инженеры заботятся о том, чтобы скорее восстановить его работу.",
+    "screenshot": "webmaster-https-readonly-2026-11-05.png"
+  },
+  "sitemap_submission": {
+    "url": "https://noir-atelier.ru/sitemap.xml",
+    "submitted": false,
+    "add_button_enabled": false,
+    "service_message": "Инструмент «Файлы Sitemap» работает в режиме «Только для чтения». Сейчас добавить файл или отправить его на переобход не получится. Наши инженеры заботятся о том, чтобы скорее восстановить работу инструмента.",
+    "already_discoverable_via_robots": true
+  },
+  "server_changes_in_this_task": false,
+  "next_step": "When Yandex restores writes, submit HTTP-to-HTTPS migration from the HTTP resource, then add the existing HTTPS sitemap once in the HTTPS resource. Verify acceptance; search migration is asynchronous."
+}
